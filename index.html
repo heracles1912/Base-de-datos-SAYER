@@ -1011,7 +1011,20 @@ body{
     <h2>🔐 Iniciar sesión</h2>
 
     <input id="correo" placeholder="Correo electrónico">
-    <input id="password" type="password" placeholder="Contraseña">
+   <div style="position:relative;">
+  <input id="password" type="password" placeholder="Contraseña">
+
+  <span onclick="togglePassword()" 
+        style="
+        position:absolute;
+        right:10px;
+        top:50%;
+        transform:translateY(-50%);
+        cursor:pointer;
+        font-size:14px;">
+    👁
+  </span>
+</div>
 
     <button class="btnLogin" onclick="login()">Entrar</button>
     <button class="btnSecundario" onclick="registro()">Crear cuenta</button>
@@ -1767,7 +1780,15 @@ function logout(){
     })
     .catch(e => alert(e.message));
 }
+function togglePassword(){
+  const input = document.getElementById("password");
 
+  if(input.type === "password"){
+    input.type = "text";
+  } else {
+    input.type = "password";
+  }
+}
 // ================= INIT =================
 
 
