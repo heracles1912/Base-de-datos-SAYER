@@ -10,7 +10,202 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <style>
-    
+.tablaActividades tbody tr:nth-child(odd){
+  background:#ffffff;
+}
+
+.tablaActividades tbody tr:nth-child(even){
+  background:#f8fafc;
+}
+
+.tablaActividades tbody tr:hover{
+  background:#e0f2fe;
+  transform:scale(1.005);
+}
+  .separador{
+  margin:25px 0;
+  height:1px;
+  background:rgba(0,0,0,0.1);
+}
+  #resultadoComparacion{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:10px;
+}
+
+/* TARJETAS */
+.cardResultado{
+  padding:15px;
+  border-radius:12px;
+  background:white;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+  border-left:6px solid;
+  transition:0.2s;
+}
+
+.cardResultado:hover{
+  transform:translateY(-2px);
+}
+
+/* COLORES */
+.cardResultado.rojo{
+  border-color:#e27d7d;
+}
+
+.cardResultado.verde{
+  border-color:#22c55e;
+}
+
+/* TEXTO */
+.tituloActividad{
+  font-weight:600;
+  font-size:15px;
+  margin-bottom:5px;
+}
+
+.detalleResultado{
+  font-size:14px;
+  color:#555;
+}
+
+/* SIN RESULTADOS */
+.sinResultados{
+  padding:15px;
+  border-radius:10px;
+  background:#f1f5f9;
+  text-align:center;
+}
+  .modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter: blur(5px); /* 👈 efecto vidrio */
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:scale(0.9);
+  }
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+.modalContenido{
+  background:white;
+  padding:40px;
+  border-radius:25px;
+  width:500px; /* 👈 más grande */
+  max-width:90%;
+  box-shadow:0 25px 60px rgba(0,0,0,0.25);
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  animation:fadeIn 0.3s ease;
+}
+
+/* TITULO */
+.modalContenido h3{
+  margin:0;
+  font-size:26px;
+  font-weight:700;
+}
+
+/* INPUTS GRANDES */
+.modalContenido input{
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  font-size:16px;
+  transition:0.2s;
+}
+
+.modalContenido input:focus{
+  border-color:#3b82f6;
+  outline:none;
+  box-shadow:0 0 0 4px rgba(59,130,246,0.2);
+}
+
+    .gridPersonas{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(280px,1fr));
+  gap:20px;
+}
+
+.cardPersona{
+  background: linear-gradient(135deg, #afeaf1, #cbd5e1);
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 10px 25px rgba(225, 217, 217, 0.2);
+  transition:0.3s;
+}
+
+.cardPersona:hover{
+  transform:translateY(-5px);
+}
+
+.headerPersona h3{
+  margin:0;
+  font-size:18px;
+}
+
+.puesto{
+  font-size:13px;
+  color:#000000;
+}
+
+.statsPersona{
+  display:flex;
+  justify-content:space-between;
+  margin:15px 0;
+}
+
+.statsPersona div{
+  text-align:center;
+}
+
+.statsPersona strong{
+  font-size:18px;
+  display:block;
+}
+
+.statsPersona span{
+  font-size:12px;
+  color:#000000;
+}
+
+.barraFondo{
+  background:#1e293b;
+  height:10px;
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:10px;
+}
+
+.barraProgreso{
+  height:100%;
+   background: linear-gradient(to right, #22c55e, #4ade80);
+}
+
+.actividadesMini{
+  font-size:13px;
+  color:#1a1a1c;
+}
+
+.miniItem{
+  margin-bottom:5px;
+}
   .foco{
   width:14px;
   height:14px;
@@ -21,7 +216,7 @@
 }
 
 .rojo{
-  background:#e53935;
+  background:#c49a9a;
 }
 
 .verde{
@@ -191,11 +386,7 @@ input[type="date"]{
   padding:6px;
 }
 
-.tablaActividades td,
-.tablaActividades th{
-  text-align:center;
-  vertical-align:middle;
-}
+
     .finPendiente{
   display:flex;
   align-items:center;
@@ -240,17 +431,17 @@ button:hover{
 .itemMes button:hover{
   background:#ffebee;
   color:#d32f2f;
-  transform:scale(1.1);
+  transform:scale(1.3);
 }
     .itemMes{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  background:white;
+  background:rgb(191, 29, 29);
   padding:18px 22px;
   margin-bottom:15px;
   border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  box-shadow:0 4px 12px rgba(189, 22, 22, 0.08);
   transition:all 0.25s ease;
   border-left:5px solid transparent;
   cursor:pointer;
@@ -259,20 +450,25 @@ button:hover{
 .itemMes:hover{
   transform:translateY(-3px);
   box-shadow:0 10px 20px rgba(0,0,0,0.12);
-  border-left:5px solid #00def7;
-  background:#fafafa;
+  background: linear-gradient(135deg, #91c0fd, #cbd5e1);
+
 }
     .iconoPersona{
   font-size:20px;
   margin-right:10px;
 }
 .accionesPersona button{
-  padding:8px 10px;
+  padding:10px 10px;
   border-radius:8px;
   border:none;
   background:#f1f1f1;
   cursor:pointer;
   transition:0.2s;
+  font-size:16px;
+  line-height:1; /* 👈 evita que uno crezca más */
+}
+.accionesPersona{
+  align-self:flex-end;
 }
 
 .accionesPersona button:hover{
@@ -280,101 +476,102 @@ button:hover{
   color:#d32f2f;
   transform:scale(1.1);
 }
-.itemPersona{
-  background:white;
-  padding:18px 22px;
-  margin-bottom:12px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  cursor:pointer;
-  transition:all 0.25s ease;
-  border-left:5px solid transparent;
-}
+
 .finPendiente{
   display:flex;
   flex-direction:column; /* 👈 uno debajo de otro */
   align-items:center;
   gap:5px;
 }
-.tablaActividades th:nth-child(1){ width:20%; }
-.tablaActividades th:nth-child(2){ width:15%; }
-.tablaActividades th:nth-child(3){ width:15%; }
-.tablaActividades th:nth-child(4){ width:25%; }
-.tablaActividades th:nth-child(5){ width:15%; }
+
 .itemPersona:hover{
-  transform:translateY(-3px);
+  transform:translateY(3px);
   box-shadow:0 10px 20px rgba(0,0,0,0.12);
-  border-left:5px solid #ec07a7;
-  background:#fafafa;
+  background: linear-gradient(135deg, #9eedf0, #cbd5e1);
+cursor: pointer;
 }
 .tablaActividades{
   border-collapse:separate;
   border-spacing:0;
-  border-radius:12px;
+  border-radius:15px;
   overflow:hidden;
-}
-.tablaActividades input{
-  width:120px;
-  padding:6px;
-  font-size:13px;
+  width:100%;
+  background:white;
 }
 
-
-.tablaActividades td{
-  padding:8px;
+.tablaActividades th{
+  background: linear-gradient(135deg, #0ea5e9, #22c55e);
+  color:white;
+  padding:12px;
   font-size:14px;
 }
-.tablaActividades th{
-  background:#189eaf;
-  color:white;
-  padding:10px;
-  text-align:left;
-}
-.tablaActividades tbody tr:nth-child(even){
-  background:#f9f9f9;
+
+.tablaActividades td{
+  padding:12px;
+  font-size:14px;
 }
 
-.tablaActividades tbody tr:nth-child(odd){
-  background:#ffffff;
-}
-.tablaActividades tbody tr:hover{
-  background:#e3f2fd; /* azul clarito */
-}
-
-
-.tablaActividades tr:hover{
-  background:#f5f5f5;
-}
-.listaPersonas{
-  list-style:none;
-  padding:0;
-}
-
-.itemPersona{
-  background:white;
-  padding:15px 20px;
-  margin-bottom:12px;
-  border-radius:10px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.tablaActividades tbody tr{
   transition:0.2s;
 }
 
-.itemPersona:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 12px rgba(0,0,0,0.12);
+.tablaActividades tbody tr:hover{
+  background:#f0f9ff;
+  transform:scale(1.01);
 }
+
+.accionesTabla{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+}
+
+.btnIcono{
+  background:#f1f5f9;
+  border:none;
+  padding:6px 8px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.btnIcono:hover{
+  background:#e0f2fe;
+  transform:scale(1.1);
+}
+.infoPersona strong,
+.infoPersona{
+  font-size:18px;
+  font-weight:600;
+}
+.listaPersonas{
+   display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  width:100%;
+   margin-left:-40px; 
+}
+
+.itemPersona{
+  background:#e2e8f0;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+
+  width:100%;
+  box-sizing:border-box;
+}
+
 
 /* TEXTO */
 .infoPersona{
-  font-size:16px;
+  display:flex;
+  flex-direction:column;
 }
-
 
 .oculto {
     display: none;
@@ -402,7 +599,7 @@ background:#f2f2f2;
   margin:40px auto; /* 👈 centra horizontal */
 
  
-  background:rgb(193, 170, 170); /* 👈 quita el cuadro */
+ background: rgba(255,255,255,0.7); /* 👈 quita el cuadro */
 
   padding:30px;
 
@@ -416,11 +613,9 @@ background:#f2f2f2;
 
 /* CONTENEDOR */
 .contenedorPozos{
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
-gap:50px;
-width:100%;
+  display:flex;
+  gap:25px;
+  align-items:flex-start;
 }
 
 /* PANEL IZQUIERDO */
@@ -578,14 +773,6 @@ cursor:pointer;
 .pozoBotones button:hover{
 background:#e8e8e8;
 }
-.cardRegistro{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
-width:320px;
-margin-bottom:20px;
-}
 
 .grupoInput{
 display:flex;
@@ -662,7 +849,8 @@ padding:0;
   font-weight:600;
 }
 .panelFormularioPozo{
-background:white;
+background: linear-gradient(135deg, #79aff5, #cbd5e1);
+
 padding:20px;
 border-radius:10px;
 box-shadow:0 3px 8px rgba(0,0,0,0.08);
@@ -685,12 +873,13 @@ width:300px;
 }
 .panelListaPozos{
   flex:1;
-  background:white;
+ background: linear-gradient(135deg, #79aff5, #cbd5e1);
   padding:25px;
   border-radius:15px;
   box-shadow:0 8px 25px rgba(0,0,0,0.08);
-  width:350px; /* 👈 ancho fijo más compacto */
-  
+   width:100%;      /* 👈 clave */
+  max-width:900px; 
+
 }
 #resultadoComparacion{
   padding:10px 15px;
@@ -727,7 +916,7 @@ margin-top:10px;
 }
 
 .btnGuardar{
-background:#a0a2a0;
+background:#000000;
 color:white;
 border:none;
 padding:8px 10px;
@@ -736,7 +925,7 @@ cursor:pointer;
 }
 
 .btnGuardar:hover{
-background:#316634;
+background:#9d9d9d;
 }
 
 .btnExcel{
@@ -784,15 +973,10 @@ background:#e5e5e5;
   width:320px;
   padding:25px;
   border-radius:20px;
-  background: white;
+ background: linear-gradient(135deg, #79aff5, #cbd5e1);
   box-shadow:0 10px 25px rgba(0,0,0,0.08);
 }
-.cardRegistro{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
-}
+
 
 .listaRegistros{
 list-style:none;
@@ -912,21 +1096,42 @@ margin-bottom:15px;
 }
 .comparador{
   display:flex;
+  flex-wrap:wrap; /* 👈 permite que bajen */
   gap:10px;
   margin-bottom:15px;
 }
 
+/* SELECTS */
 .comparador select{
+  flex:1 1 200px; /* 👈 se adaptan */
+  min-width:150px;
   padding:8px;
   border-radius:6px;
   border:1px solid #ccc;
 }
 
+/* BOTONES */
+.comparador button{
+  flex:1 1 150px; /* 👈 bajan si no caben */
+  min-width:140px;
+}
+@media (max-width: 600px){
+
+  .comparador{
+    flex-direction:column; /* 👈 todo vertical */
+  }
+
+  .comparador select,
+  .comparador button{
+    width:100%; /* 👈 ocupan todo el ancho */
+  }
+
+}
 #resultadoComparacion{
   margin-top:10px;
-  background:#f7f7f7;
+  background:transparent;
   padding:10px;
-  border-left:5px solid #ece40c;
+
 }
 /* CONTENEDOR CENTRADO */
 .loginContainer{
@@ -996,14 +1201,86 @@ margin-bottom:15px;
   background:#0b5904;
 }
 body{
-  background:linear-gradient(135deg, #b4cbdc, #e4bbbb);
+  background: linear-gradient(135deg, #afccf1, #cbd5e1);
+}
+.modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
 }
 
+.modalContenido{
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  width:300px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.accionesModal{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+}
+
+.btnGuardarModal{
+  background:#22c55e;
+  color:white;
+  border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btnGuardarModal:hover{
+  background:#16a34a;
+}
+
+.btnCancelarModal{
+  background:#f1f5f9;
+  border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.btnCancelarModal:hover{
+  background:#e2e8f0;
+}
+
+.oculto{
+  display:none;
+}
 </style>
 </head>
 
 <body>
+<div id="modalEditar" class="modal oculto">
 
+  <div class="modalContenido">
+    <h3>✏️ Editar Persona</h3>
+
+    <input id="editNombre" placeholder="Nombre">
+    <input id="editPuesto" placeholder="Puesto">
+
+    <div class="accionesModal">
+      <button class="btnCancelarModal" onclick="cerrarModal()">❌ Cancelar</button>
+      <button class="btnGuardarModal" onclick="guardarEdicion()">💾 Guardar</button>
+    </div>
+  </div>
+
+</div>
 <!-- ================= VIZUALIZAR REGISTRO  ================= -->
 <div id="login" class="loginContainer seccion">
 
@@ -1083,53 +1360,60 @@ Guardar registro
 <!-- ================= POZOS ================= -->
 <div id="pozos" class="seccion">
 
-
 <div class="contenedorPozos">
 
-<!-- PANEL IZQUIERDO -->
-<div class="panelFormularioPozo">
-<h2 id="tituloMes"></h2>
+  <!-- IZQUIERDA -->
+  <div class="colIzquierda">
 
-<div class="formActividad">
+    <div class="panelFormularioPozo">
+      <h2 id="tituloMes"></h2>
 
-  <h3>Agregar Persona</h3>
+      <div class="formActividad">
+        <h3>Agregar Persona</h3>
 
-  <div class="grupoCampo">
-    <label>Nombre:</label>
-    <input id="nombrePersona" placeholder="Ej. Juan Pérez">
+        <div class="grupoCampo">
+          <label>Nombre:</label>
+          <input id="nombrePersona" placeholder="Ej. Juan Pérez">
+        </div>
+
+        <div class="grupoCampo">
+          <label>Puesto:</label>
+          <input id="puestoPersona" placeholder="Ej. Operador">
+        </div>
+
+        <div class="botonesForm">
+          <button class="btnVerde" onclick="guardarPersona()">Agregar persona</button>
+          <button class="btnRojo" onclick="volverRegistros()">⬅ Volver</button>
+        </div>
+      </div>
+    </div>
+<br>
+    <div class="panelFormularioPozo">
+      <h3>Comparar</h3>
+
+      <div class="comparador">
+        <select id="persona1"></select>
+        <select id="persona2"></select>
+
+        <button class="btnGuardar" onclick="compararPersonas()">⚖️ Comparar</button>
+      </div>
+
+      <div id="resultadoComparacion"></div>
+    </div>
+
   </div>
 
-  <div class="grupoCampo">
-  <label>Puesto:</label>
-  <input id="puestoPersona" placeholder="Ej. Operador">
-</div>
+  <!-- DERECHA -->
+  <div class="panelListaPozos">
+    <h3>Personas</h3>
 
-  <div class="botonesForm">
-    <button class="btnVerde" onclick="guardarPersona()">Agregar persona</button>
-    <button class="btnRojo" onclick="volverRegistros()">⬅ Volver</button>
+    <div class="comparador">
+      <button class="btnGuardar" onclick="irAnalisis()">📊 Ver análisis</button>
+    </div>
+
+    <ul id="listaPersonas" class="listaPersonas"></ul>
   </div>
-</div>
 
-</div>
-
-<!-- PANEL DERECHO -->
-
-<div class="panelListaPozos">
-
-<h3>Personas</h3>
-<div class="comparador">
-
-  <select id="persona1"></select>
-  <select id="persona2"></select>
-
-  <button class="btnGuardar" onclick="compararPersonas()">⚖️ Comparar</button>
-  <button class="btnGuardar" onclick="irAnalisis()">📊 Ver análisis</button>
-
-</div>
-<div id="resultadoComparacion"></div>
-<ul id="listaPersonas" class="listaPersonas"></ul>
-
-</div>
 </div>
 </div>
 
@@ -1200,7 +1484,36 @@ Guardar registro
   
 
 </div>
+
+<div id="modalActividad" class="modal oculto">
+
+  <div class="modalContenido">
+    <h3>✏️ Editar Actividad</h3>
+
+    <input id="editActNombre" placeholder="Actividad">
+
+    <label>Fecha inicio</label>
+    <input type="date" id="editActFecha">
+
+    <label>Hora inicio</label>
+    <input type="time" id="editActInicio">
+
+    <label>Fecha fin</label>
+    <input type="date" id="editActFechaFin">
+
+    <label>Hora fin</label>
+    <input type="time" id="editActFin">
+
+    <div class="accionesModal">
+      <button class="btnCancelarModal" onclick="cerrarModalActividad()">❌ Cancelar</button>
+      <button class="btnGuardarModal" onclick="guardarActividadEditada()">💾 Guardar</button>
+    </div>
+  </div>
+
+</div>
 <script>
+  let indexActividadEditando = null;
+  let indexEditando = null;
     let unsubscribeDoc = null;
 const firebaseConfig = {
   apiKey: "AIzaSyCyJ7uYtyGVpGx_VLBLJkCdsjJBcOrigw0",
@@ -1398,17 +1711,29 @@ lista.innerHTML = "";
 
       <div class="infoPersona">
   <span class="iconoPersona">👤</span> ${p.nombre}
-  <br>
+  <br><br>
   <small style="color:#777;">${p.puesto}</small>
 </div>
 
       <div class="accionesPersona">
-        <button onclick="event.stopPropagation(); eliminarPersona(${i})">🗑</button>
-      </div>
+  <button onclick="event.stopPropagation(); abrirEditar(${i})">✏️</button>
+  <button onclick="event.stopPropagation(); eliminarPersona(${i})">🗑</button>
+</div>
 
     </li>`;
     
   });
+}
+function abrirEditar(i){
+
+  indexEditando = i;
+
+  const persona = registroActivo.personas[i];
+
+  document.getElementById("editNombre").value = persona.nombre;
+  document.getElementById("editPuesto").value = persona.puesto;
+
+  document.getElementById("modalEditar").classList.remove("oculto");
 }
 // ================= ELIMINAR =================
 function eliminarPersona(i){
@@ -1421,7 +1746,39 @@ function eliminarPersona(i){
   });
   actualizarPersonas();
 }
+function editarPersona(i){
 
+  const persona = registroActivo.personas[i];
+
+  const lista = document.getElementById("listaPersonas");
+
+  lista.children[i].innerHTML = `
+    
+    <input id="editNombre_${i}" value="${persona.nombre}">
+    <input id="editPuesto_${i}" value="${persona.puesto}">
+
+    <button onclick="guardarEdicion(${i})">💾 Guardar</button>
+  `;
+}
+function guardarEdicion(){
+
+  const nombre = document.getElementById("editNombre").value;
+  const puesto = document.getElementById("editPuesto").value;
+
+  registroActivo.personas[indexEditando].nombre = nombre;
+  registroActivo.personas[indexEditando].puesto = puesto;
+
+  db.collection("registros")
+    .doc(registroActivo.id)
+    .update({
+      personas: registroActivo.personas
+    });
+
+  cerrarModal();
+}
+function cerrarModal(){
+  document.getElementById("modalEditar").classList.add("oculto");
+}
 function eliminarActividad(i){
  registroActivo.personas[personaActiva].actividades.splice(i,1);
 
@@ -1539,11 +1896,73 @@ lista.innerHTML = "";
 
      <td>${calcularHoras(a.inicio, a.fin, a.fecha, a.fechaFin)}</td>
       <td>
-        <button onclick="eliminarActividad(${i})">🗑</button>
-      </td>
-
+  <div class="accionesTabla">
+    <button class="btnIcono" onclick="editarActividad(${i})">✏️</button>
+    <button class="btnIcono" onclick="eliminarActividad(${i})">🗑</button>
+  </div>
+</td>
     </tr>`;
   });
+}
+function editarActividad(i){
+
+  indexActividadEditando = i;
+
+  const actividad = registroActivo.personas[personaActiva].actividades[i];
+
+  document.getElementById("editActNombre").value = actividad.nombre;
+  document.getElementById("editActFecha").value = actividad.fecha;
+  document.getElementById("editActInicio").value = actividad.inicio;
+
+  document.getElementById("editActFechaFin").value = actividad.fechaFin || actividad.fecha;
+  document.getElementById("editActFin").value = actividad.fin || "";
+
+  document.getElementById("modalActividad").classList.remove("oculto");
+}
+function guardarActividadEditada(){
+
+  const actividad = registroActivo.personas[personaActiva].actividades[indexActividadEditando];
+
+  const nombre = document.getElementById("editActNombre").value;
+  const fechaInicio = document.getElementById("editActFecha").value;
+  const inicio = document.getElementById("editActInicio").value;
+
+  const fechaFin = document.getElementById("editActFechaFin").value;
+  const fin = document.getElementById("editActFin").value;
+
+  if(!nombre || !fechaInicio || !inicio){
+    alert("Completa los datos obligatorios");
+    return;
+  }
+
+  // 🔥 VALIDACIÓN DE TIEMPOS
+  if(fin){
+    const inicioDate = new Date(`${fechaInicio}T${inicio}`);
+    const finDate = new Date(`${fechaFin || fechaInicio}T${fin}`);
+
+    if(finDate < inicioDate){
+      alert("La hora final no puede ser menor a la inicial");
+      return;
+    }
+  }
+
+  actividad.nombre = nombre;
+  actividad.fecha = fechaInicio;
+  actividad.inicio = inicio;
+  actividad.fin = fin || null;
+  actividad.fechaFin = fin ? (fechaFin || fechaInicio) : null;
+
+  db.collection("registros")
+    .doc(registroActivo.id)
+    .update({
+      personas: registroActivo.personas
+    });
+
+  cerrarModalActividad();
+  mostrarActividades();
+}
+function cerrarModalActividad(){
+  document.getElementById("modalActividad").classList.add("oculto");
 }
 function finalizarActividad(i){
 
@@ -1601,38 +2020,69 @@ function compararPersonas(){
 
   const p1 = document.getElementById("persona1").value;
   const p2 = document.getElementById("persona2").value;
-if(!p1 || !p2){
-  alert("Selecciona ambas personas");
-  return;
-}
+
+  if(!p1 || !p2){
+    alert("Selecciona ambas personas");
+    return;
+  }
+
+  if(p1 === p2){
+    alert("Selecciona personas diferentes");
+    return;
+  }
+
   const persona1 = registroActivo.personas.find(p => p.nombre === p1);
   const persona2 = registroActivo.personas.find(p => p.nombre === p2);
 
-  let resultado = "";
+  let html = "";
 
   persona1.actividades.forEach(a1 => {
 
-    const a2 = persona2.actividades.find(a => a.nombre === a1.nombre);
+    // 🔥 NORMALIZAR NOMBRE (CLAVE)
+    const nombreAct = a1.nombre.toLowerCase().trim();
 
+    const a2 = persona2.actividades.find(a => 
+      a.nombre.toLowerCase().trim() === nombreAct
+    );
+
+    // 🔥 VALIDAR QUE AMBAS TERMINARON
     if(a2 && a1.fin && a2.fin){
 
       const t1 = minutos(a1.inicio, a1.fin, a1.fecha, a1.fechaFin);
-const t2 = minutos(a2.inicio, a2.fin, a2.fecha, a2.fechaFin);
+      const t2 = minutos(a2.inicio, a2.fin, a2.fecha, a2.fechaFin);
+
+      let estado = "";
+      let clase = "";
+
       if(t1 > t2){
-  resultado += `<span class="foco rojo"></span> ${a1.nombre}: ${p1} tardó más<br>`;
-} 
-else if(t2 > t1){
-  resultado += `<span class="foco rojo"></span> ${a1.nombre}: ${p2} tardó más<br>`;
-} 
-else {
-  resultado += `<span class="foco verde"></span> ${a1.nombre}: igual tiempo<br>`;
-}
+        estado = `${p1} tardó más`;
+        clase = "rojo";
+      } 
+      else if(t2 > t1){
+        estado = `${p2} tardó más`;
+        clase = "rojo";
+      } 
+      else {
+        estado = "Mismo tiempo";
+        clase = "verde";
+      }
+
+      // 🔥 DISEÑO BONITO
+      html += `
+        <div class="cardResultado ${clase}">
+          <div class="tituloActividad">🛠 ${a1.nombre}</div>
+          <div class="detalleResultado">${estado}</div>
+          <div class="tiempos">
+            ${p1}: ${formatoHoras(t1)} | ${p2}: ${formatoHoras(t2)}
+          </div>
+        </div>
+      `;
     }
 
   });
 
   document.getElementById("resultadoComparacion").innerHTML =
-    resultado || "No hay actividades en común";
+    html || "<div class='sinResultados'>No hay actividades en común</div>";
 }
 function minutos(inicio, fin, fechaInicio, fechaFin){
 
@@ -1692,36 +2142,47 @@ function formatoHoras(min){
 
   return `${h}h ${m}m`;
 }
-function generarRanking(){
+function generarDashboardPersonas(){
 
-  let lista = registroActivo.personas.map(p => {
-    return {
-      nombre: p.nombre,
-      minutos: totalHorasPersona(p)
-    };
-  });
+  let html = `<div class="gridPersonas">`;
 
-  lista.sort((a,b) => b.minutos - a.minutos);
+  registroActivo.personas.forEach(p => {
 
-  let html = `<div class="cardAnalisis">
-  <h2>📊 Análisis de productividad</h2>
-  <h3>🏆 Ranking</h3>`;
-
-  lista.forEach((p,i) => {
-
-    let ancho = Math.min(p.minutos / 5, 100);
+    let totalMin = totalHorasPersona(p);
+    let totalHoras = formatoHoras(totalMin);
+    let actividades = p.actividades.length;
 
     html += `
-    <div class="itemRanking">
-      
-      <div class="rankingTop">
-        <span class="posicion">#${i+1}</span>
-        <span class="nombre">${p.nombre}</span>
-        <span class="horas">${formatoHoras(p.minutos)}</span>
+    <div class="cardPersona">
+
+      <div class="headerPersona">
+        <div>
+          <h3>${p.nombre}</h3>
+          <span class="puesto">${p.puesto}</span>
+        </div>
+      </div>
+
+      <div class="statsPersona">
+        <div>
+          <strong>${totalHoras}</strong>
+          <span>Horas</span>
+        </div>
+        <div>
+          <strong>${actividades}</strong>
+          <span>Actividades</span>
+        </div>
       </div>
 
       <div class="barraFondo">
-        <div class="barraProgreso" style="width:${ancho}%"></div>
+        <div class="barraProgreso" style="width:${Math.min(totalMin/5,100)}%"></div>
+      </div>
+
+      <div class="actividadesMini">
+        ${p.actividades.slice(-3).map(a => `
+          <div class="miniItem">
+            📝 ${a.nombre}
+          </div>
+        `).join("")}
       </div>
 
     </div>`;
@@ -1763,10 +2224,8 @@ function dashboard(){
  
 }
 function irAnalisis(){
-
-  generarRanking();
-  
-  mostrar("analisis"); // 🔥 cambia de pantalla
+  generarDashboardPersonas(); // 👈 en lugar de ranking
+  mostrar("analisis");
 }
 function registro(){
   const email = document.getElementById("correo").value;
@@ -1814,6 +2273,19 @@ function togglePassword(){
     input.type = "text";
   } else {
     input.type = "password";
+  }
+}
+window.onclick = function(e){
+
+  const modalPersona = document.getElementById("modalEditar");
+  const modalActividad = document.getElementById("modalActividad");
+
+  if(e.target === modalPersona){
+    cerrarModal();
+  }
+
+  if(e.target === modalActividad){
+    cerrarModalActividad();
   }
 }
 // ================= INIT =================
