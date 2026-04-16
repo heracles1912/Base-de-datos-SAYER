@@ -7,6 +7,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <style>
     
@@ -1050,7 +1051,7 @@ body{
 
 <div class="grupoCampo">
 <label>AÑO:</label>
-<input id="AÑO" placeholder="Ej. 2026">
+<input id="anio" placeholder="Ej. 2026">
 </div>
 
 <button class="btnVerde" onclick="guardarRegistro();">
@@ -1196,18 +1197,21 @@ const firebaseConfig = {
   appId: "1:753055408963:web:6a1cb4a1e7de8ddbec45f6",
   measurementId: "G-771QQ2670S"
 };
-  const app = firebase.initializeApp(firebaseConfig);
+
+const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
+let registros = [];
 const meses = {
   enero:0, febrero:1, marzo:2, abril:3,
   mayo:4, junio:5, julio:6, agosto:7,
   septiembre:8, octubre:9, noviembre:10, diciembre:11
 };
+
 let personaActiva = null;
 auth.onAuthStateChanged(user => {
   if(user){
-    registros = JSON.parse(localStorage.getItem(user.uid)) || [];
-    actualizarRegistros();
+    escucharRegistros(); // 👈 nuevo
     mostrar("registros");
   } else {
     mostrar("login");
@@ -1219,8 +1223,8 @@ let registroActivo = null;
 // ================= GUARDAR MES =================
 function guardarRegistro(){
 
-  const mes = MES.value;
-  const anio = AÑO.value;
+  const mes = document.getElementById("MES").value;
+const anio = document.getElementById("anio").value;
 
   if(!mes || !anio){
     alert("Completa mes y año");
@@ -1231,50 +1235,64 @@ function guardarRegistro(){
 
   const nombreMes = mesLimpio.charAt(0).toUpperCase() + mesLimpio.slice(1) + " " + anio;
 
-  registros.push({
+  db.collection("registros").add({
     mes: nombreMes,
     mesNum: meses[mesLimpio],
     anio: parseInt(anio),
     personas: []
   });
 
-  guardarLocal();
-  actualizarRegistros();
-
-  MES.value="";
-  AÑO.value="";
+  document.getElementById("MES").value = "";
+document.getElementById("anio").value = "";
 }
 
 // ================= MOSTRAR MESES =================
 function actualizarRegistros(){
   
-  listaRegistros.innerHTML = "";
+  const lista = document.getElementById("listaRegistros");
+lista.innerHTML = "";
   registros.sort((a,b)=> {
   if(a.anio !== b.anio) return a.anio - b.anio;
   return a.mesNum - b.mesNum;
 });
   registros.forEach((r,i)=>{
 
-    listaRegistros.innerHTML += `
-    <li class="itemMes" onclick="seleccionarRegistro(${i})">
+    lista.innerHTML += `
+    <li class="itemMes" onclick="seleccionarRegistro('${r.id}')">
 
       <div class="nombreMes">
         <span class="iconoMes">📁</span> ${r.mes}
       </div>
 
       <div class="accionesPersona">
-        <button onclick="event.stopPropagation(); eliminarRegistro(${i})">🗑</button>
+        <button onclick="event.stopPropagation(); eliminarRegistro('${r.id}')">🗑</button>
       </div>
 
     </li>`;
     
   });
 }
-function eliminarRegistro(i){
-  if(confirm("Eliminar este mes?")){
-    registros.splice(i,1);
-    guardarLocal();
+
+function escucharRegistros(){
+
+  db.collection("registros")
+  .onSnapshot(snapshot => {
+
+    registros = [];
+
+    snapshot.forEach(doc => {
+      registros.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
     actualizarRegistros();
+  });
+}
+function eliminarRegistro(id){
+  if(confirm("Eliminar este mes?")){
+    db.collection("registros").doc(id).delete();
   }
 }
 function obtenerFechaMes(texto){
@@ -1292,11 +1310,19 @@ function obtenerFechaMes(texto){
   return new Date(parseInt(anio), meses[mes]);
 }
 // ================= SELECCIONAR MES =================
-function seleccionarRegistro(i){
-  registroActivo = i;
+function seleccionarRegistro(id){
 
-  tituloMes.innerText = "MES: " + registros[i].mes;
+  registroActivo = registros.find(r => r.id === id);
+
+  if(!registroActivo){
+    alert("Error cargando registro");
+    return;
+  }
+
+  document.getElementById("tituloMes").innerText = "MES: " + registroActivo.mes;
+
   document.getElementById("resultadoComparacion").innerHTML = "";
+
   actualizarPersonas();
   mostrar("pozos");
   llenarSelects();
@@ -1305,7 +1331,7 @@ function seleccionarRegistro(i){
 // ================= POZOS =================
 function guardarPersona(){
 
-  const nombre = nombrePersona.value;
+  const nombre = document.getElementById("nombrePersona").value;
   const puesto = document.getElementById("puestoPersona").value;
 
   if(!nombre || !puesto){
@@ -1313,28 +1339,34 @@ function guardarPersona(){
     return;
   }
 
-  registros[registroActivo].personas.push({
+  registroActivo.personas.push({
     nombre,
     puesto,
     actividades:[]
   });
 
-  nombrePersona.value="";
+  db.collection("registros")
+    .doc(registroActivo.id)
+    .update({
+      personas: registroActivo.personas
+    });
+
+  document.getElementById("nombrePersona").value = "";
   document.getElementById("puestoPersona").value="";
 
-  guardarLocal();
   actualizarPersonas();
-  llenarSelects();
+llenarSelects();
 }
 
 // ================= MOSTRAR POZOS =================
 function actualizarPersonas(){
 
-  listaPersonas.innerHTML = "";
+  const lista = document.getElementById("listaPersonas");
+lista.innerHTML = "";
 
-  registros[registroActivo].personas.forEach((p,i)=>{
+  registroActivo.personas.forEach((p,i)=>{
 
-    listaPersonas.innerHTML += `
+    lista.innerHTML += `
     <li class="itemPersona" onclick="abrirPersona(${i})">
 
       <div class="infoPersona">
@@ -1353,24 +1385,28 @@ function actualizarPersonas(){
 }
 // ================= ELIMINAR =================
 function eliminarPersona(i){
-  registros[registroActivo].personas.splice(i,1);
-  guardarLocal();
+  registroActivo.personas.splice(i,1);
+ 
+  db.collection("registros")
+  .doc(registroActivo.id)
+  .update({
+    personas: registroActivo.personas
+  });
   actualizarPersonas();
 }
 
 function eliminarActividad(i){
-  registros[registroActivo].personas[personaActiva].actividades.splice(i,1);
-  guardarLocal();
+ registroActivo.personas[personaActiva].actividades.splice(i,1);
+
+  db.collection("registros")
+  .doc(registroActivo.id)
+  .update({
+    personas: registroActivo.personas
+  });
   mostrarActividades();
 }
 
 // ================= GUARDADO =================
-function guardarLocal(){
-  const user = auth.currentUser;
-  if(user){
-    localStorage.setItem(user.uid, JSON.stringify(registros));
-  }
-}
 
 // ================= NAVEGACIÓN =================
 function mostrar(id){
@@ -1393,11 +1429,12 @@ function volverRegistros(){
 function abrirPersona(i){
   personaActiva = i;
 
-  listaActividades.innerHTML = ""; // limpia vista;
+  const lista = document.getElementById("listaActividades");
+lista.innerHTML = "";
 
-  const persona = registros[registroActivo].personas[i];
+  const persona =registroActivo.personas[i];
 
-  tituloPersona.innerText = "Persona: " + persona.nombre;
+ document.getElementById("tituloPersona").innerText = "Persona: " + persona.nombre;
 
   mostrarActividades();
 
@@ -1422,7 +1459,7 @@ function guardarActividad(){
     return;
   }
 
-  registros[registroActivo].personas[personaActiva].actividades.push({
+  registroActivo.personas[personaActiva].actividades.push({
     nombre,
     inicio,
     fin: null,
@@ -1433,21 +1470,27 @@ function guardarActividad(){
   horaInicio.value="";
   fechaActividad.value="";
 
-  guardarLocal();
+
+  db.collection("registros")
+  .doc(registroActivo.id)
+  .update({
+    personas: registroActivo.personas
+  });
   mostrarActividades();
 }
 function mostrarActividades(){
 
-  listaActividades.innerHTML="";
+  const lista = document.getElementById("listaActividades");
+lista.innerHTML = "";
 
-  const persona = registros[registroActivo].personas[personaActiva];
+  const persona = registroActivo.personas[personaActiva];
 
   // 🔥 AQUÍ VA
   persona.actividades.sort((a,b)=> new Date(a.fecha) - new Date(b.fecha));
 
   persona.actividades.forEach((a,i)=>{
 
-    listaActividades.innerHTML += `
+    lista.innerHTML += `
     <tr>
 
       <td>📝 ${a.nombre}</td>
@@ -1485,12 +1528,17 @@ function finalizarActividad(i){
     return;
   }
 
-  const actividad = registros[registroActivo].personas[personaActiva].actividades[i];
+  const actividad = registroActivo.personas[personaActiva].actividades[i];
 
   actividad.fin = fin;
   actividad.fechaFin = fechaFin || actividad.fecha;
 
-  guardarLocal();
+
+  db.collection("registros")
+  .doc(registroActivo.id)
+  .update({
+    personas: registroActivo.personas
+  });
   mostrarActividades();
 }
 function calcularHoras(inicio, fin, fechaInicio, fechaFin){
@@ -1521,8 +1569,8 @@ if(!p1 || !p2){
   alert("Selecciona ambas personas");
   return;
 }
-  const persona1 = registros[registroActivo].personas.find(p => p.nombre === p1);
-  const persona2 = registros[registroActivo].personas.find(p => p.nombre === p2);
+  const persona1 = registroActivo.personas.find(p => p.nombre === p1);
+  const persona2 = registroActivo.personas.find(p => p.nombre === p2);
 
   let resultado = "";
 
@@ -1578,7 +1626,7 @@ function llenarSelects(){
   select1.innerHTML = `<option value="">Seleccionar persona</option>`;
 select2.innerHTML = `<option value="">Seleccionar persona</option>`;
 
-  registros[registroActivo].personas.forEach(p => {
+ registroActivo.personas.forEach(p => {
 
   select1.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
   select2.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
@@ -1606,7 +1654,7 @@ function formatoHoras(min){
 }
 function generarRanking(){
 
-  let lista = registros[registroActivo].personas.map(p => {
+  let lista = registroActivo.personas.map(p => {
     return {
       nombre: p.nombre,
       minutos: totalHorasPersona(p)
@@ -1648,7 +1696,7 @@ function generarGrafica(){
   let contenedor = document.getElementById("grafica");
   contenedor.innerHTML = "";
 
-  let lista = registros[registroActivo].personas;
+  let lista = registroActivo.personas;
 
   lista.forEach(p => {
 
@@ -1681,8 +1729,8 @@ function irAnalisis(){
   mostrar("analisis"); // 🔥 cambia de pantalla
 }
 function registro(){
-  const email = correo.value;
-  const pass = password.value;
+  const email = document.getElementById("correo").value;
+const pass = document.getElementById("password").value;
 
   auth.createUserWithEmailAndPassword(email, pass)
     .then(()=>{
@@ -1691,8 +1739,8 @@ function registro(){
     .catch(e => alert(e.message));
 }
 function login(){
-  const email = correo.value;
-  const pass = password.value;
+  const email = document.getElementById("correo").value;
+const pass = document.getElementById("password").value;
 
   auth.signInWithEmailAndPassword(email, pass)
     .then(()=>{
@@ -1721,7 +1769,7 @@ function logout(){
 }
 
 // ================= INIT =================
-actualizarRegistros();
+
 
 </script>
 
