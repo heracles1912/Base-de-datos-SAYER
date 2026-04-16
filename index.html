@@ -8,6 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
 
 <style>
 .tablaActividades tbody tr:nth-child(odd){
@@ -216,16 +218,18 @@
 }
 
 .rojo{
-  background:#c49a9a;
+  color:#dc2626;
+  font-weight:bold;
+  background:none !important;
 }
 
 .verde{
-  background:#43a047;
+  color:#16a34a;
+  font-weight:bold;
+  background:none !important;
 }
 
-.amarillo{
-  background:#fdd835;
-}
+
 
 @keyframes parpadeo{
   0%{opacity:1;}
@@ -929,16 +933,19 @@ background:#9d9d9d;
 }
 
 .btnExcel{
-background:#1976d2;
-color:white;
-border:none;
-padding:8px 10px;
-border-radius:5px;
-cursor:pointer;
+background:#03e957;
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.2s;
 }
 
 .btnExcel:hover{
-background:#145aa3;
+background:#a0eaa6;
+  transform:translateY(-1px);
 }
 
 .btnVolver{
@@ -1262,6 +1269,43 @@ body{
 .oculto{
   display:none;
 }
+.tiempoAct{
+  float:right;
+  font-size:12px;
+  color:#444;
+}
+
+.miniItem{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:4px 0;
+}
+
+/* 🔴 actividad lenta */
+.miniItem.lenta{
+  color:#dc2626;
+  font-weight:bold;
+}
+
+/* 🔥 indicador visual */
+.miniItem.lenta::after{
+  content:" ⏰";
+}
+.miniItem.roja{
+  color:#dc2626;
+  font-weight:bold;
+}
+
+.miniItem.amarilla{
+  color:#f59e0b;
+  font-weight:bold;
+}
+
+.miniItem.verde{
+  color:#16a34a;
+  font-weight:bold;
+}
 </style>
 </head>
 
@@ -1392,12 +1436,15 @@ Guardar registro
       <h3>Comparar</h3>
 
       <div class="comparador">
-        <select id="persona1"></select>
-        <select id="persona2"></select>
 
-        <button class="btnGuardar" onclick="compararPersonas()">⚖️ Comparar</button>
-      </div>
+  <select id="persona1"></select>
+  <select id="persona2"></select>
+  <select id="persona3"></select>
+  <select id="persona4"></select>
 
+  <button class="btnGuardar" onclick="compararPersonas()">⚖️ Comparar</button>
+
+</div>
       <div id="resultadoComparacion"></div>
     </div>
 
@@ -1480,6 +1527,7 @@ Guardar registro
   <div id="ranking"></div>
   <div class="accionesAnalisis">
   <button class="btnRojo" onclick="volverAPersonas()">⬅ Volver</button>
+  <button class="btnExcel" onclick="exportarExcel()">📊 Descargar Excel</button>
 </div>
   
 
@@ -1512,6 +1560,62 @@ Guardar registro
 
 </div>
 <script>
+function compararActividadesGlobal(){
+
+  // 🔥 limpiar estados
+  registroActivo.personas.forEach(p => {
+    p.actividades.forEach(a => a.estado = "");
+  });
+
+  let mapa = {};
+
+  // 🔥 agrupar actividades por nombre
+  registroActivo.personas.forEach(p => {
+    p.actividades.forEach(a => {
+
+      if(!a.fin) return;
+
+      const nombre = a.nombre.toLowerCase().trim();
+
+      if(!mapa[nombre]){
+        mapa[nombre] = [];
+      }
+
+      mapa[nombre].push({
+        actividad: a,
+        tiempo: minutos(a.inicio, a.fin, a.fecha, a.fechaFin)
+      });
+
+    });
+  });
+
+  // 🔥 ordenar y asignar colores
+  Object.values(mapa).forEach(lista => {
+
+    if(lista.length < 2) return;
+
+    // ordenar de mayor a menor (más lento primero)
+    lista.sort((a,b) => b.tiempo - a.tiempo);
+
+   lista.forEach((item, index) => {
+
+  if(index === 0){
+    item.actividad.estado = "roja"; // 🔴 más lento
+  } 
+  else if(index === lista.length - 1){
+    item.actividad.estado = "verde"; // 🟢 más rápido
+  } 
+  else {
+    item.actividad.estado = ""; // sin color
+  }
+
+});
+
+  });
+}
+
+
+
   let indexActividadEditando = null;
   let indexEditando = null;
     let unsubscribeDoc = null;
@@ -2018,65 +2122,74 @@ function calcularHoras(inicio, fin, fechaInicio, fechaFin){
 }
 function compararPersonas(){
 
-  const p1 = document.getElementById("persona1").value;
-  const p2 = document.getElementById("persona2").value;
+  const nombres = [
+    persona1.value,
+    persona2.value,
+    persona3.value,
+    persona4.value
+  ].filter(n => n); // elimina vacíos
 
-  if(!p1 || !p2){
-    alert("Selecciona ambas personas");
+  if(nombres.length < 2){
+    alert("Selecciona al menos 2 personas");
     return;
   }
 
-  if(p1 === p2){
-    alert("Selecciona personas diferentes");
-    return;
-  }
-
-  const persona1 = registroActivo.personas.find(p => p.nombre === p1);
-  const persona2 = registroActivo.personas.find(p => p.nombre === p2);
+  // obtener objetos persona
+  const personas = nombres.map(n =>
+    registroActivo.personas.find(p => p.nombre === n)
+  );
 
   let html = "";
 
-  persona1.actividades.forEach(a1 => {
+  // tomar actividades de la primera persona como base
+  personas[0].actividades.forEach(act => {
 
-    // 🔥 NORMALIZAR NOMBRE (CLAVE)
-    const nombreAct = a1.nombre.toLowerCase().trim();
+    const nombreAct = act.nombre.toLowerCase().trim();
 
-    const a2 = persona2.actividades.find(a => 
-      a.nombre.toLowerCase().trim() === nombreAct
-    );
+    let tiempos = [];
 
-    // 🔥 VALIDAR QUE AMBAS TERMINARON
-    if(a2 && a1.fin && a2.fin){
+    personas.forEach(p => {
+      const a = p.actividades.find(x =>
+        x.nombre.toLowerCase().trim() === nombreAct
+      );
 
-      const t1 = minutos(a1.inicio, a1.fin, a1.fecha, a1.fechaFin);
-      const t2 = minutos(a2.inicio, a2.fin, a2.fecha, a2.fechaFin);
+      if(a && a.fin){
+        const t = minutos(a.inicio, a.fin, a.fecha, a.fechaFin);
 
-      let estado = "";
-      let clase = "";
-
-      if(t1 > t2){
-        estado = `${p1} tardó más`;
-        clase = "rojo";
-      } 
-      else if(t2 > t1){
-        estado = `${p2} tardó más`;
-        clase = "rojo";
-      } 
-      else {
-        estado = "Mismo tiempo";
-        clase = "verde";
+        tiempos.push({
+          persona: p.nombre,
+          tiempo: t
+        });
       }
+    });
 
-      // 🔥 DISEÑO BONITO
-      html += `
-        <div class="cardResultado ${clase}">
-          <div class="tituloActividad">🛠 ${a1.nombre}</div>
-          <div class="detalleResultado">${estado}</div>
-          <div class="tiempos">
-            ${p1}: ${formatoHoras(t1)} | ${p2}: ${formatoHoras(t2)}
+    if(tiempos.length >= 2){
+
+      // ordenar de mayor a menor (más lento primero)
+      tiempos.sort((a,b) => b.tiempo - a.tiempo);
+
+      html += `<div class="cardResultado">`;
+      html += `<div class="tituloActividad">🛠 ${act.nombre}</div>`;
+
+      tiempos.forEach((t,i) => {
+
+  let color = "";
+
+  if(i === 0){
+    color = "rojo"; // más lento
+  }
+  else if(i === tiempos.length - 1){
+    color = "verde"; // más rápido
+  }
+
+        html += `
+          <div class="${color}">
+            ${t.persona}: ${formatoHoras(t.tiempo)}
           </div>
-        </div>
-      `;
+        `;
+      });
+
+      html += `</div>`;
     }
 
   });
@@ -2110,18 +2223,20 @@ function formatoHora(hora){
 }
 function llenarSelects(){
 
-  const select1 = document.getElementById("persona1");
-  const select2 = document.getElementById("persona2");
+  const selects = [
+    document.getElementById("persona1"),
+    document.getElementById("persona2"),
+    document.getElementById("persona3"),
+    document.getElementById("persona4")
+  ];
 
-  select1.innerHTML = `<option value="">Seleccionar persona</option>`;
-select2.innerHTML = `<option value="">Seleccionar persona</option>`;
+  selects.forEach(select => {
+    select.innerHTML = `<option value="">Seleccionar persona</option>`;
 
- registroActivo.personas.forEach(p => {
-
-  select1.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
-  select2.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
-
-});
+    registroActivo.personas.forEach(p => {
+      select.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+    });
+  });
 }
 function totalHorasPersona(persona){
 
@@ -2144,6 +2259,8 @@ function formatoHoras(min){
 }
 function generarDashboardPersonas(){
 
+  compararActividadesGlobal(); // 🔥 clave
+
   let html = `<div class="gridPersonas">`;
 
   registroActivo.personas.forEach(p => {
@@ -2156,10 +2273,8 @@ function generarDashboardPersonas(){
     <div class="cardPersona">
 
       <div class="headerPersona">
-        <div>
-          <h3>${p.nombre}</h3>
-          <span class="puesto">${p.puesto}</span>
-        </div>
+        <h3>${p.nombre}</h3>
+        <span class="puesto">${p.puesto}</span>
       </div>
 
       <div class="statsPersona">
@@ -2178,11 +2293,19 @@ function generarDashboardPersonas(){
       </div>
 
       <div class="actividadesMini">
-        ${p.actividades.slice(-3).map(a => `
-          <div class="miniItem">
-            📝 ${a.nombre}
-          </div>
-        `).join("")}
+        ${p.actividades.slice(-3).map(a => {
+
+          const tiempo = a.fin 
+            ? formatoHoras(minutos(a.inicio, a.fin, a.fecha, a.fechaFin))
+            : "En proceso";
+
+          return `
+            <div class="miniItem ${a.estado || ""}">
+              📝 ${a.nombre} 
+              <span class="tiempoAct">${tiempo}</span>
+            </div>
+          `;
+        }).join("")}
       </div>
 
     </div>`;
@@ -2192,6 +2315,7 @@ function generarDashboardPersonas(){
 
   document.getElementById("ranking").innerHTML = html;
 }
+
 function generarGrafica(){
 
   let contenedor = document.getElementById("grafica");
@@ -2288,6 +2412,117 @@ window.onclick = function(e){
     cerrarModalActividad();
   }
 }
+
+async function exportarExcel(){
+
+  // 🔥 asigna rojo (más lento) y verde (más rápido)
+  compararActividadesGlobal();
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Reporte");
+
+  // 🧱 COLUMNAS
+  sheet.columns = [
+    { header: "Persona", key: "persona", width: 25 },
+    { header: "Puesto", key: "puesto", width: 20 },
+    { header: "Actividad", key: "actividad", width: 30 },
+    { header: "Horas", key: "horas", width: 15 },
+    { header: "Estado", key: "estado", width: 18 }
+  ];
+
+  // 🔵 ENCABEZADO BONITO
+  const header = sheet.getRow(1);
+  header.eachCell(cell => {
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF3B82F6" }
+    };
+    cell.font = {
+      bold: true,
+      color: { argb: "FFFFFFFF" }
+    };
+    cell.alignment = { horizontal: "center", vertical: "middle" };
+  });
+
+// 🔥 juntar todas las actividades en un solo arreglo
+let filas = [];
+
+registroActivo.personas.forEach(p => {
+
+  p.actividades.forEach(a => {
+
+    if(!a.fin) return;
+
+    filas.push({
+      persona: p.nombre,
+      puesto: p.puesto,
+      actividad: a.nombre,
+      horas: formatoHoras(
+        minutos(a.inicio, a.fin, a.fecha, a.fechaFin)
+      ),
+      estado: a.estado
+    });
+
+  });
+
+});
+
+// 🔥 ordenar GLOBAL por actividad
+filas.sort((a,b) =>
+  a.actividad.localeCompare(b.actividad)
+);
+
+// 🔥 meter al Excel
+filas.forEach(f => {
+
+  let estadoTexto = "";
+  if(f.estado === "roja") estadoTexto = "MÁS LENTO";
+  if(f.estado === "verde") estadoTexto = "MÁS RÁPIDO";
+
+  const row = sheet.addRow({
+    persona: f.persona,
+    puesto: f.puesto,
+    actividad: f.actividad,
+    horas: f.horas,
+    estado: estadoTexto
+  });
+
+  // 🔴 rojo
+  if(f.estado === "roja"){
+    row.getCell("estado").font = {
+      color: { argb: "FFDC2626" },
+      bold: true
+    };
+  }
+
+  // 🟢 verde
+  if(f.estado === "verde"){
+    row.getCell("estado").font = {
+      color: { argb: "FF16A34A" },
+      bold: true
+    };
+  }
+
+});
+
+  // 📦 BORDES TIPO TABLA
+  sheet.eachRow(row => {
+    row.eachCell(cell => {
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" }
+      };
+    });
+  });
+
+  // 📥 DESCARGAR
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), "Reporte_Pro.xlsx");
+}
+
 // ================= INIT =================
 
 
