@@ -1557,15 +1557,24 @@ function finalizarActividad(i){
 
   const actividad = registroActivo.personas[personaActiva].actividades[i];
 
+  const inicioDate = new Date(`${actividad.fecha}T${actividad.inicio}`);
+  const finDate = new Date(`${fechaFin || actividad.fecha}T${fin}`);
+
+  // 🔥 VALIDACIÓN AQUÍ (solo 1 vez)
+  if(finDate < inicioDate){
+    alert("La hora final no puede ser menor a la inicial");
+    return;
+  }
+
   actividad.fin = fin;
   actividad.fechaFin = fechaFin || actividad.fecha;
 
-
   db.collection("registros")
-  .doc(registroActivo.id)
-  .update({
-    personas: registroActivo.personas
-  });
+    .doc(registroActivo.id)
+    .update({
+      personas: JSON.parse(JSON.stringify(registroActivo.personas))
+    });
+
   mostrarActividades();
 }
 function calcularHoras(inicio, fin, fechaInicio, fechaFin){
@@ -1627,10 +1636,14 @@ else {
 }
 function minutos(inicio, fin, fechaInicio, fechaFin){
 
-  if(!fin) return 0;
+  if(!fin || !fechaInicio) return 0;
 
   const inicioDate = new Date(`${fechaInicio}T${inicio}`);
   const finDate = new Date(`${fechaFin || fechaInicio}T${fin}`);
+
+  if(finDate < inicioDate){
+    return 0; // 👈 sin alert
+  }
 
   return Math.floor((finDate - inicioDate) / 60000);
 }
