@@ -1201,6 +1201,7 @@ Guardar registro
 
 </div>
 <script>
+    let unsubscribeDoc = null;
 const firebaseConfig = {
   apiKey: "AIzaSyCyJ7uYtyGVpGx_VLBLJkCdsjJBcOrigw0",
   authDomain: "base-de-datos-sayer.firebaseapp.com",
@@ -1325,20 +1326,33 @@ function obtenerFechaMes(texto){
 // ================= SELECCIONAR MES =================
 function seleccionarRegistro(id){
 
-  registroActivo = registros.find(r => r.id === id);
-
-  if(!registroActivo){
-    alert("Error cargando registro");
-    return;
+  // 🔥 cancelar escucha anterior
+  if(unsubscribeDoc){
+    unsubscribeDoc();
   }
 
-  document.getElementById("tituloMes").innerText = "MES: " + registroActivo.mes;
+  // 🔥 escuchar documento en tiempo real
+  unsubscribeDoc = db.collection("registros")
+    .doc(id)
+    .onSnapshot(doc => {
 
-  document.getElementById("resultadoComparacion").innerHTML = "";
+      registroActivo = {
+        id: doc.id,
+        ...doc.data()
+      };
 
-  actualizarPersonas();
+      document.getElementById("tituloMes").innerText = "MES: " + registroActivo.mes;
+
+      actualizarPersonas();
+      llenarSelects();
+
+      // 👇 si estás dentro de una persona, refresca actividades
+      if(personaActiva !== null){
+        mostrarActividades();
+      }
+    });
+
   mostrar("pozos");
-  llenarSelects();
 }
 
 // ================= POZOS =================
