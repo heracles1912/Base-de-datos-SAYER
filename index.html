@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sistema de Pozos</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+    
+  .foco{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  display:inline-block;
+  margin-right:6px;
+  animation:parpadeo 1s infinite;
+}
+
+.rojo{
+  background:#e53935;
+}
+
+.verde{
+  background:#43a047;
+}
+
+.amarillo{
+  background:#fdd835;
+}
+
+@keyframes parpadeo{
+  0%{opacity:1;}
+  50%{opacity:0.3;}
+  100%{opacity:1;}
+}
+  .accionesAnalisis{
+  margin-top:25px;
+}
+  .itemRanking{
+  margin-bottom:20px;
+}
+
+.rankingTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
+}
+
+.posicion{
+  font-weight:bold;
+  color:#2e7d32;
+}
+
+.nombre{
+  flex:1;
+  margin-left:10px;
+  font-weight:600;
+}
+
+.horas{
+  color:#555;
+}
+
+.barraFondo{
+  width:100%;
+  height:12px;
+  background:#eee;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.barraProgreso{
+  height:100%;
+  background:linear-gradient(to right, #2e7d32, #66bb6a);
+  border-radius:10px;
+  transition:0.4s;
+}
+  #analisis{
+  max-width:600px;
+  margin:auto;
+}
+
+.cardAnalisis{
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.08);
+}
+    .botonesForm{
+  display:flex;
+  flex-direction:column; /* uno abajo del otro */
+  gap:12px; /* 👈 separación automática */
+}
+    .btnVerde{
+  background:#20c012;
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.2s;
+}
+
+.btnVerde:hover{
+  background:#256628;
+  transform:translateY(-1px);
+}
+ .btnRojo{
+  background:#e90303;
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.2s;
+}
+
+.btnRojo:hover{
+  background:#b74e4e;
+  transform:translateY(-1px);
+}
+    input[type="time"]:focus,
+input[type="date"]:focus{
+  border-color:#2e7d32;
+  outline:none;
+  box-shadow:0 0 0 3px rgba(46,125,50,0.15);
+}
+    input[type="time"],
+input[type="date"]{
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  font-size:14px;
+  background:white;
+  transition:0.2s;
+  width:200px;
+}
+    .grupoCampo{
+  display:flex;
+  flex-direction:column;
+}
+    .formActividad{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+.formActividad label{
+  font-weight:600;
+  margin-bottom:5px;
+}
+
+.formActividad input{
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:14px;
+  transition:0.2s;
+}
+
+.formActividad input:focus{
+  border-color:#2e7d32;
+  outline:none;
+  box-shadow:0 0 0 3px rgba(46,125,50,0.15);
+}
+    .finPendiente span{
+  font-size:13px;
+  color:#777;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+    .finPendiente button{
+  padding:6px 10px;
+  border-radius:6px;
+  background:#e0e0e0;
+}
+
+.finPendiente button:hover{
+  background:#c8e6c9;
+}
+    .finPendiente input{
+  width:120px;
+  padding:6px;
+}
+
+.tablaActividades td,
+.tablaActividades th{
+  text-align:center;
+  vertical-align:middle;
+}
+    .finPendiente{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#999;
+  font-size:13px;
+}
+    button{
+  padding:6px 10px;
+  border-radius:6px;
+  border:none;
+  background:#e0e0e0;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+button:hover{
+  background:#c8e6c9;
+  transform:scale(1.05);
+}
+    input[type="time"]{
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  background:white;
+  font-size:14px;
+}
+
+    .iconoMes{
+  font-size:20px;
+  margin-right:10px;
+}
+    .itemMes button{
+  padding:8px 10px;
+  border-radius:8px;
+  border:none;
+  background:#f1f1f1;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.itemMes button:hover{
+  background:#ffebee;
+  color:#d32f2f;
+  transform:scale(1.1);
+}
+    .itemMes{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:white;
+  padding:18px 22px;
+  margin-bottom:15px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  transition:all 0.25s ease;
+  border-left:5px solid transparent;
+  cursor:pointer;
+}
+
+.itemMes:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 20px rgba(0,0,0,0.12);
+  border-left:5px solid #00def7;
+  background:#fafafa;
+}
+    .iconoPersona{
+  font-size:20px;
+  margin-right:10px;
+}
+.accionesPersona button{
+  padding:8px 10px;
+  border-radius:8px;
+  border:none;
+  background:#f1f1f1;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.accionesPersona button:hover{
+  background:#ffebee;
+  color:#d32f2f;
+  transform:scale(1.1);
+}
+.itemPersona{
+  background:white;
+  padding:18px 22px;
+  margin-bottom:12px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  transition:all 0.25s ease;
+  border-left:5px solid transparent;
+}
+.finPendiente{
+  display:flex;
+  flex-direction:column; /* 👈 uno debajo de otro */
+  align-items:center;
+  gap:5px;
+}
+.tablaActividades th:nth-child(1){ width:20%; }
+.tablaActividades th:nth-child(2){ width:15%; }
+.tablaActividades th:nth-child(3){ width:15%; }
+.tablaActividades th:nth-child(4){ width:25%; }
+.tablaActividades th:nth-child(5){ width:15%; }
+.itemPersona:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 20px rgba(0,0,0,0.12);
+  border-left:5px solid #ec07a7;
+  background:#fafafa;
+}
+.tablaActividades{
+  border-collapse:separate;
+  border-spacing:0;
+  border-radius:12px;
+  overflow:hidden;
+}
+.tablaActividades input{
+  width:120px;
+  padding:6px;
+  font-size:13px;
+}
+
+
+.tablaActividades td{
+  padding:8px;
+  font-size:14px;
+}
+.tablaActividades th{
+  background:#189eaf;
+  color:white;
+  padding:10px;
+  text-align:left;
+}
+.tablaActividades tbody tr:nth-child(even){
+  background:#f9f9f9;
+}
+
+.tablaActividades tbody tr:nth-child(odd){
+  background:#ffffff;
+}
+.tablaActividades tbody tr:hover{
+  background:#e3f2fd; /* azul clarito */
+}
+
+
+.tablaActividades tr:hover{
+  background:#f5f5f5;
+}
+.listaPersonas{
+  list-style:none;
+  padding:0;
+}
+
+.itemPersona{
+  background:white;
+  padding:15px 20px;
+  margin-bottom:12px;
+  border-radius:10px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  transition:0.2s;
+}
+
+.itemPersona:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 12px rgba(0,0,0,0.12);
+}
+
+/* TEXTO */
+.infoPersona{
+  font-size:16px;
+}
+
+
+.oculto {
+    display: none;
+}
+
+button:active{
+  transition: none;
+}
+
+button:disabled {
+  background-color: #e0e0e0;
+  color: #888;
+  cursor: not-allowed;
+  transform: scale(0.98);
+}
+body { 
+font-family: Arial; 
+background:#f2f2f2;
+}
+
+.seccion{
+  display:none;
+
+  max-width:1000px; /* 👈 limita ancho */
+  margin:40px auto; /* 👈 centra horizontal */
+
+ 
+  background:rgb(193, 170, 170); /* 👈 quita el cuadro */
+
+  padding:30px;
+
+  border-radius:20px; /* 👈 esquinas modernas */
+  box-shadow:0 10px 30px rgba(0,0,0,0.08); /* 👈 profundidad */
+}
+
+.seccion.activo{
+  display:block;
+}
+
+/* CONTENEDOR */
+.contenedorPozos{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:50px;
+width:100%;
+}
+
+/* PANEL IZQUIERDO */
+.panelIzq{
+width:320px;
+}
+
+/* PANEL DERECHO */
+.panelDer{
+flex:1;
+}
+
+
+.contenedorTarifa{
+display:flex;
+gap:40px;
+margin-top:20px;
+}
+
+.panelEntrada{
+width:320px;
+}
+
+.panelResultado{
+flex:1;
+}
+
+
+.panelResultado h3{
+color:#2e7d32;
+margin-top:18px;
+}
+
+.panelCalculo{
+display:flex;
+gap:30px;
+margin-top:20px;
+align-items:flex-start;
+}
+
+/* PANEL INPUTS (IZQUIERDA) */
+.panelInputs{
+width:320px;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
+}
+
+/* RESULTADOS (DERECHA) */
+.panelResultados{
+flex:1;
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
+border-left:6px solid #2e7d32;
+line-height:1.7;
+font-size:14px;
+}
+
+.panelResultados h3{
+color:#2e7d32;
+margin-top:18px;
+margin-bottom:8px;
+font-size:18px;
+border-bottom:1px solid #eee;
+padding-bottom:4px;
+}
+
+.panelInputs input{
+width:150px;
+padding:6px;
+border:1px solid #ccc;
+border-radius:5px;
+margin-bottom:8px;
+}
+
+.panelInputs span{
+margin-left:6px;
+font-size:13px;
+color:#666;
+}
+
+.panelInputs button{
+padding:8px 12px;
+border-radius:6px;
+border:1px solid #ccc;
+cursor:pointer;
+background:#f5f5f5;
+}
+
+.panelInputs button:hover{
+background:#e9e9e9;
+}
+
+.panelInputs button:first-of-type{
+background:#2e7d32;
+color:white;
+border:none;
+}
+
+.panelInputs button:first-of-type:hover{
+background:#256628;
+}
+
+
+
+.panelResultados{
+flex:1;
+background:#f7f7f7;
+padding:20px;
+border-left:5px solid #2e7d32;
+line-height:1.6;
+font-size:14px;
+}
+
+.panelResultados h3{
+color:#2e7d32;
+margin-top:18px;
+margin-bottom:5px;
+}
+.pozoCard{
+background:white;
+border:1px solid #ddd;
+border-radius:8px;
+padding:12px;
+margin-bottom:12px;
+box-shadow:0 2px 5px rgba(0,0,0,0.08);
+}
+
+.pozoTitulo{
+display:flex;
+align-items:center;
+gap:10px;
+font-weight:bold;
+margin-bottom:6px;
+}
+
+.pozoResultados{
+margin-left:30px;
+color:#2e7d32;
+line-height:1.5;
+font-size:14px;
+}
+.pozoBotones button{
+margin-right:5px;
+padding:4px 8px;
+border-radius:4px;
+border:1px solid #bbb;
+background:#f5f5f5;
+cursor:pointer;
+}
+
+.pozoBotones button:hover{
+background:#e8e8e8;
+}
+.cardRegistro{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
+width:320px;
+margin-bottom:20px;
+}
+
+.grupoInput{
+display:flex;
+flex-direction:column;
+margin-bottom:10px;
+}
+
+.grupoInput label{
+font-size:13px;
+color:#555;
+margin-bottom:3px;
+}
+
+.grupoInput input{
+padding:7px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+.btnGuardarRegistro{
+  background:#2e7d32;
+  color:white;
+  padding:12px 18px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.btnGuardarRegistro:hover{
+  background:#256628;
+  transform:scale(1.03);
+}
+h2{
+  font-size:30px;
+  margin-bottom:1px;
+}
+
+h3{
+  font-size:25px;
+  color:#000000;
+  margin-bottom:15px;
+}
+.tituloLista{
+margin-top:20px;
+}
+
+.listaRegistros{
+list-style:none;
+padding:0;
+}
+
+.itemMes{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:white;
+  padding:18px 20px;
+  margin-bottom:15px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+  transition:all 0.25s ease;
+  border-left:6px solid #2e7d32;
+}
+
+.itemMes:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.12);
+}
+
+.nombreMes{
+  font-size:18px;
+  font-weight:600;
+}
+.panelFormularioPozo{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
+width:300px;
+}
+.panelFormulario input{
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  margin-top:5px;
+  margin-bottom:15px;
+  font-size:14px;
+}
+
+.panelFormulario input:focus{
+  border-color:#2e7d32;
+  outline:none;
+  box-shadow:0 0 0 2px rgba(46,125,50,0.2);
+  
+}
+.panelListaPozos{
+  flex:1;
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.08);
+  width:350px; /* 👈 ancho fijo más compacto */
+  
+}
+#resultadoComparacion{
+  padding:10px 15px;
+  border-radius:8px;
+  background:#f5f5f5;
+  display:flex;
+  align-items:center; /* 👈 centra vertical */
+  gap:10px;
+  min-height:40px; /* 👈 evita que se corte */
+}
+
+.grupoInput{
+display:flex;
+flex-direction:column;
+margin-bottom:12px;
+}
+
+.grupoInput label{
+font-size:13px;
+color:#666;
+margin-bottom:3px;
+}
+
+.grupoInput input{
+padding:7px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+.botonesFormulario{
+display:flex;
+gap:8px;
+margin-top:10px;
+}
+
+.btnGuardar{
+background:#a0a2a0;
+color:white;
+border:none;
+padding:8px 10px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.btnGuardar:hover{
+background:#316634;
+}
+
+.btnExcel{
+background:#1976d2;
+color:white;
+border:none;
+padding:8px 10px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.btnExcel:hover{
+background:#145aa3;
+}
+
+.btnVolver{
+margin-top:12px;
+background:#f0f0f0;
+border:1px solid #ccc;
+padding:7px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.btnVolver:hover{
+background:#e5e5e5;
+}
+
+.contenedorRegistros{
+  display:flex;
+  justify-content:center; /* 👈 centra todo */
+  align-items:flex-start;
+  gap:40px;
+  max-width:900px; /* 👈 limita ancho */
+  margin:40px auto; /* 👈 centra en pantalla */
+}
+
+/* PANEL IZQUIERDO */
+.panelLista{
+  width:350px; /* 👈 ancho fijo más compacto */
+}
+
+/* PANEL DERECHO */
+.panelFormulario{
+  width:320px;
+  padding:25px;
+  border-radius:20px;
+  background: white;
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+.cardRegistro{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
+}
+
+.listaRegistros{
+list-style:none;
+padding:0;
+}
+body{
+    min-height: 100vh;
+  background:#eef2f5; /* más moderno que gris plano */
+}
+.itemMes{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 16px;
+  margin-bottom:10px;
+  border-radius:10px;
+  background:white;
+  box-shadow:0 2px 6px rgba(0,0,0,0.06);
+  transition:0.2s;
+  font-size:14px;
+}
+
+.itemMes:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 12px rgba(0,0,0,0.1);
+}
+.listaRegistros li{
+background:white;
+border:1px solid #ddd;
+padding:12px;
+margin-bottom:10px;
+border-radius:6px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.gridCalculos{
+display:grid;
+grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+gap:15px;
+margin-top:20px;
+margin-bottom:20px;
+}
+
+.btnCalculo{
+background:#ffffff;
+border:1px solid #ddd;
+border-radius:8px;
+padding:15px;
+font-size:15px;
+cursor:pointer;
+box-shadow:0 2px 5px rgba(0,0,0,0.08);
+transition:all 0.2s;
+}
+
+/* BOTON BLOQUEADO */
+.btnCalculo:disabled{
+background:#e0e0e0;
+color:#9e9e9e;
+border:1px solid #cfcfcf;
+box-shadow:none;
+cursor:not-allowed;
+}
+
+.btnCalculo:hover:not(:disabled){
+transform:translateY(-2px);
+box-shadow:0 4px 10px rgba(0,0,0,0.12);
+}
+
+.btnCalculo:disabled{
+background:#e0e0e0;
+color:#9e9e9e;
+border:1px solid #cfcfcf;
+box-shadow:none;
+cursor:not-allowed;
+opacity:0.8;
+}
+
+.btnVolverMenu{
+margin-top:10px;
+padding:8px 12px;
+background:#f0f0f0;
+border:1px solid #ccc;
+border-radius:5px;
+cursor:pointer;
+}
+#menuCalculos{
+visibility:hidden;
+}
+.btnCalculo:disabled{
+background:#e0e0e0 !important;
+color:#9e9e9e !important;
+border:1px solid #cfcfcf !important;
+box-shadow:none !important;
+cursor:not-allowed;
+opacity:0.7;
+}
+
+.btnCalculo:disabled:hover{
+transform:none;
+box-shadow:none;
+}
+
+.encabezadoSistema{
+width:100%;
+text-align:center;
+margin-top:10px;
+margin-bottom:10px;
+}
+
+.logoSener{
+display:block;
+margin:auto;
+width:300px;
+margin-bottom:15px;
+}
+.comparador{
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.comparador select{
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+#resultadoComparacion{
+  margin-top:10px;
+  background:#f7f7f7;
+  padding:10px;
+  border-left:5px solid #ece40c;
+}
+/* CONTENEDOR CENTRADO */
+.loginContainer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background:transparent; /* 👈 quita el cuadro */
+}
+
+/* TARJETA */
+.loginCard{
+  background:white;
+  padding:40px;
+  border-radius:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+  width:300px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  text-align:center;
+}
+
+/* INPUTS */
+.loginCard input{
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:14px;
+  transition:0.2s;
+}
+
+.loginCard input:focus{
+  border-color:#2e7d32;
+  outline:none;
+  box-shadow:0 0 0 3px rgba(46,125,50,0.2);
+}
+
+/* BOTÓN PRINCIPAL */
+.btnLogin{
+  background:#058ee3;
+  color:white;
+  border:none;
+  padding:12px;
+  border-radius:8px;
+  
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.btnLogin:hover{
+  background:#0623e1;
+  transform:translateY(-1px);
+}
+
+/* BOTÓN SECUNDARIO */
+.btnSecundario{
+  background:#64b82c;
+  color:white;
+  border:none;
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.btnSecundario:hover{
+  background:#0b5904;
+}
+body{
+  background:linear-gradient(135deg, #b4cbdc, #e4bbbb);
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ================= VIZUALIZAR REGISTRO  ================= -->
+<div id="login" class="loginContainer seccion">
+
+  <div class="loginCard">
+    <h2>🔐 Iniciar sesión</h2>
+
+    <input id="correo" placeholder="Correo electrónico">
+    <input id="password" type="password" placeholder="Contraseña">
+
+    <button class="btnLogin" onclick="login()">Entrar</button>
+    <button class="btnSecundario" onclick="registro()">Crear cuenta</button>
+  </div>
+
+</div>
+
+<div id="registros" class="seccion">
+
+<div class="contenedorRegistros">
+
+<!-- IZQUIERDA -->
+ 
+<div class="panelLista">
+<div class="encabezadoSistema">
+</div>
+  
+<h3 class="tituloLista">MES</h3>
+<ul id="listaRegistros" class="listaRegistros"></ul>
+
+</div>
+
+
+<!-- DERECHA -->
+<div class="panelFormulario">
+
+<div class="formActividad">
+
+<h2>Registro de nuevo mes</h2>
+
+
+
+<div class="grupoCampo">
+<label>MES:</label>
+<input id="MES" placeholder="Ej. Abril">
+</div>
+
+<div class="grupoCampo">
+<label>AÑO:</label>
+<input id="AÑO" placeholder="Ej. 2026">
+</div>
+
+<button class="btnVerde" onclick="guardarRegistro();">
+Guardar registro
+</button>
+<button onclick="logout()" class="btnRojo">Cerrar sesión</button>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ================= POZOS ================= -->
+<div id="pozos" class="seccion">
+
+
+<div class="contenedorPozos">
+
+<!-- PANEL IZQUIERDO -->
+<div class="panelFormularioPozo">
+<h2 id="tituloMes"></h2>
+
+<div class="formActividad">
+
+  <h3>Agregar Persona</h3>
+
+  <div class="grupoCampo">
+    <label>Nombre:</label>
+    <input id="nombrePersona" placeholder="Ej. Juan Pérez">
+  </div>
+
+  <div class="grupoCampo">
+  <label>Puesto:</label>
+  <input id="puestoPersona" placeholder="Ej. Operador">
+</div>
+
+  <div class="botonesForm">
+    <button class="btnVerde" onclick="guardarPersona()">Agregar persona</button>
+    <button class="btnRojo" onclick="volverRegistros()">⬅ Volver</button>
+  </div>
+</div>
+
+</div>
+
+<!-- PANEL DERECHO -->
+
+<div class="panelListaPozos">
+
+<h3>Personas</h3>
+<div class="comparador">
+
+  <select id="persona1"></select>
+  <select id="persona2"></select>
+
+  <button class="btnGuardar" onclick="compararPersonas()">⚖️ Comparar</button>
+  <button class="btnGuardar" onclick="irAnalisis()">📊 Ver análisis</button>
+
+</div>
+<div id="resultadoComparacion"></div>
+<ul id="listaPersonas" class="listaPersonas"></ul>
+
+</div>
+</div>
+</div>
+
+<div id="detallePersona" class="seccion">
+
+<div class="contenedorPozos">
+
+  <!-- IZQUIERDA -->
+  <div class="panelFormularioPozo card">
+<div class="formActividad">
+    <h2 id="tituloPersona"></h2>
+
+    <h3>Agregar Actividad</h3>
+<div class="grupoCampo">
+  <label>Fecha</label>
+  <input type="date" id="fechaActividad">
+</div>
+
+    <div class="grupoCampo">
+  <label>Actividad</label>
+  <input id="actividadNombre" placeholder="Ej. Limpieza de pozo">
+</div>
+    
+    <div class="grupoCampo">
+  <label>Hora de inicio</label>
+  <input type="time" id="horaInicio">
+</div>
+
+
+    <button class="btnVerde" onclick="guardarActividad()">Guardar actividad</button>
+    <button class="btnRojo" onclick="volverAPersonas()">⬅ Volver</button>
+
+  </div>
+</div>
+
+  <!-- DERECHA -->
+  <div class="panelListaPozos card">
+
+    <h3>Lista de Actividades</h3>
+
+   <table class="tablaActividades">
+  <thead>
+    <tr>
+      <th>Actividad</th>
+      <th>Fecha</th>
+      <th>Inicio</th>
+      <th>Fin</th>
+      <th>Horas</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="listaActividades"></tbody>
+</table>
+
+  </div>
+
+</div>
+
+</div>
+<div id="analisis" class="seccion">
+
+ 
+
+  <div id="ranking"></div>
+  <div class="accionesAnalisis">
+  <button class="btnRojo" onclick="volverAPersonas()">⬅ Volver</button>
+</div>
+  
+
+</div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCyJ7uYtyGVpGx_VLBLJkCdsjJBcOrigw0",
+  authDomain: "base-de-datos-sayer.firebaseapp.com",
+  projectId: "base-de-datos-sayer",
+  storageBucket: "base-de-datos-sayer.firebasestorage.app",
+  messagingSenderId: "753055408963",
+  appId: "1:753055408963:web:6a1cb4a1e7de8ddbec45f6",
+  measurementId: "G-771QQ2670S"
+};
+  const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const meses = {
+  enero:0, febrero:1, marzo:2, abril:3,
+  mayo:4, junio:5, julio:6, agosto:7,
+  septiembre:8, octubre:9, noviembre:10, diciembre:11
+};
+let personaActiva = null;
+auth.onAuthStateChanged(user => {
+  if(user){
+    registros = JSON.parse(localStorage.getItem(user.uid)) || [];
+    actualizarRegistros();
+    mostrar("registros");
+  } else {
+    mostrar("login");
+  }
+});
+
+let registroActivo = null;
+
+// ================= GUARDAR MES =================
+function guardarRegistro(){
+
+  const mes = MES.value;
+  const anio = AÑO.value;
+
+  if(!mes || !anio){
+    alert("Completa mes y año");
+    return;
+  }
+
+  const mesLimpio = mes.toLowerCase();
+
+  const nombreMes = mesLimpio.charAt(0).toUpperCase() + mesLimpio.slice(1) + " " + anio;
+
+  registros.push({
+    mes: nombreMes,
+    mesNum: meses[mesLimpio],
+    anio: parseInt(anio),
+    personas: []
+  });
+
+  guardarLocal();
+  actualizarRegistros();
+
+  MES.value="";
+  AÑO.value="";
+}
+
+// ================= MOSTRAR MESES =================
+function actualizarRegistros(){
+  
+  listaRegistros.innerHTML = "";
+  registros.sort((a,b)=> {
+  if(a.anio !== b.anio) return a.anio - b.anio;
+  return a.mesNum - b.mesNum;
+});
+  registros.forEach((r,i)=>{
+
+    listaRegistros.innerHTML += `
+    <li class="itemMes" onclick="seleccionarRegistro(${i})">
+
+      <div class="nombreMes">
+        <span class="iconoMes">📁</span> ${r.mes}
+      </div>
+
+      <div class="accionesPersona">
+        <button onclick="event.stopPropagation(); eliminarRegistro(${i})">🗑</button>
+      </div>
+
+    </li>`;
+    
+  });
+}
+function eliminarRegistro(i){
+  if(confirm("Eliminar este mes?")){
+    registros.splice(i,1);
+    guardarLocal();
+    actualizarRegistros();
+  }
+}
+function obtenerFechaMes(texto){
+
+  const [mesRaw, anio] = texto.trim().split(" ");
+
+  const mes = mesRaw.toLowerCase().trim();
+
+  const meses = {
+    enero:0, febrero:1, marzo:2, abril:3,
+    mayo:4, junio:5, julio:6, agosto:7,
+    septiembre:8, octubre:9, noviembre:10, diciembre:11
+  };
+
+  return new Date(parseInt(anio), meses[mes]);
+}
+// ================= SELECCIONAR MES =================
+function seleccionarRegistro(i){
+  registroActivo = i;
+
+  tituloMes.innerText = "MES: " + registros[i].mes;
+  document.getElementById("resultadoComparacion").innerHTML = "";
+  actualizarPersonas();
+  mostrar("pozos");
+  llenarSelects();
+}
+
+// ================= POZOS =================
+function guardarPersona(){
+
+  const nombre = nombrePersona.value;
+  const puesto = document.getElementById("puestoPersona").value;
+
+  if(!nombre || !puesto){
+    alert("Completa nombre y puesto");
+    return;
+  }
+
+  registros[registroActivo].personas.push({
+    nombre,
+    puesto,
+    actividades:[]
+  });
+
+  nombrePersona.value="";
+  document.getElementById("puestoPersona").value="";
+
+  guardarLocal();
+  actualizarPersonas();
+  llenarSelects();
+}
+
+// ================= MOSTRAR POZOS =================
+function actualizarPersonas(){
+
+  listaPersonas.innerHTML = "";
+
+  registros[registroActivo].personas.forEach((p,i)=>{
+
+    listaPersonas.innerHTML += `
+    <li class="itemPersona" onclick="abrirPersona(${i})">
+
+      <div class="infoPersona">
+  <span class="iconoPersona">👤</span> ${p.nombre}
+  <br>
+  <small style="color:#777;">${p.puesto}</small>
+</div>
+
+      <div class="accionesPersona">
+        <button onclick="event.stopPropagation(); eliminarPersona(${i})">🗑</button>
+      </div>
+
+    </li>`;
+    
+  });
+}
+// ================= ELIMINAR =================
+function eliminarPersona(i){
+  registros[registroActivo].personas.splice(i,1);
+  guardarLocal();
+  actualizarPersonas();
+}
+
+function eliminarActividad(i){
+  registros[registroActivo].personas[personaActiva].actividades.splice(i,1);
+  guardarLocal();
+  mostrarActividades();
+}
+
+// ================= GUARDADO =================
+function guardarLocal(){
+  const user = auth.currentUser;
+  if(user){
+    localStorage.setItem(user.uid, JSON.stringify(registros));
+  }
+}
+
+// ================= NAVEGACIÓN =================
+function mostrar(id){
+
+  // ocultar login manualmente
+  document.getElementById("login").style.display = "none";
+
+  document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activo"));
+  document.getElementById(id).classList.add("activo");
+
+  // si quieres volver a mostrar login
+  if(id === "login"){
+    document.getElementById("login").style.display = "flex";
+  }
+}
+
+function volverRegistros(){
+  mostrar("registros");
+}
+function abrirPersona(i){
+  personaActiva = i;
+
+  listaActividades.innerHTML = ""; // limpia vista;
+
+  const persona = registros[registroActivo].personas[i];
+
+  tituloPersona.innerText = "Persona: " + persona.nombre;
+
+  mostrarActividades();
+
+  mostrar("detallePersona"); // 🔥 cambio de pantalla
+}
+function volverAPersonas(){
+  mostrar("pozos");
+}
+function guardarActividad(){
+
+  if(personaActiva === null){
+    alert("Selecciona una persona primero");
+    return;
+  }
+
+  const nombre = actividadNombre.value;
+  const inicio = horaInicio.value;
+  const fecha = fechaActividad.value;
+
+  if(!nombre || !inicio || !fecha){
+    alert("Completa actividad, hora inicio y fecha");
+    return;
+  }
+
+  registros[registroActivo].personas[personaActiva].actividades.push({
+    nombre,
+    inicio,
+    fin: null,
+    fecha
+  });
+
+  actividadNombre.value="";
+  horaInicio.value="";
+  fechaActividad.value="";
+
+  guardarLocal();
+  mostrarActividades();
+}
+function mostrarActividades(){
+
+  listaActividades.innerHTML="";
+
+  const persona = registros[registroActivo].personas[personaActiva];
+
+  // 🔥 AQUÍ VA
+  persona.actividades.sort((a,b)=> new Date(a.fecha) - new Date(b.fecha));
+
+  persona.actividades.forEach((a,i)=>{
+
+    listaActividades.innerHTML += `
+    <tr>
+
+      <td>📝 ${a.nombre}</td>
+      <td>📅 ${a.fecha || "-"}</td>
+      <td>${formatoHora(a.inicio)}</td>
+
+      <td>
+  ${
+    !a.fin
+  ? `<div class="finPendiente">
+  <span>⏱ En proceso</span>
+  <input type="date" id="fechaFin_${i}">
+  <input type="time" id="fin_${i}">
+  <button onclick="finalizarActividad(${i})">✔</button>
+</div>`
+    : formatoHora(a.fin)
+  }
+</td>
+
+     <td>${calcularHoras(a.inicio, a.fin, a.fecha, a.fechaFin)}</td>
+      <td>
+        <button onclick="eliminarActividad(${i})">🗑</button>
+      </td>
+
+    </tr>`;
+  });
+}
+function finalizarActividad(i){
+
+  const fin = document.getElementById("fin_" + i).value;
+  const fechaFin = document.getElementById("fechaFin_" + i).value;
+
+  if(!fin){
+    alert("Ingresa hora de finalización");
+    return;
+  }
+
+  const actividad = registros[registroActivo].personas[personaActiva].actividades[i];
+
+  actividad.fin = fin;
+  actividad.fechaFin = fechaFin || actividad.fecha;
+
+  guardarLocal();
+  mostrarActividades();
+}
+function calcularHoras(inicio, fin, fechaInicio, fechaFin){
+
+  if(!fin) return "--";
+
+  const totalMin = minutos(inicio, fin, fechaInicio, fechaFin);
+
+  let dias = Math.floor(totalMin / (60*24));
+  let horas = Math.floor((totalMin % (60*24)) / 60);
+  let minutosRest = totalMin % 60;
+
+  let resultado = "";
+
+  if(dias > 0){
+    resultado += `${dias}d `;
+  }
+
+  resultado += `${horas}h ${minutosRest}m`;
+
+  return resultado;
+}
+function compararPersonas(){
+
+  const p1 = document.getElementById("persona1").value;
+  const p2 = document.getElementById("persona2").value;
+if(!p1 || !p2){
+  alert("Selecciona ambas personas");
+  return;
+}
+  const persona1 = registros[registroActivo].personas.find(p => p.nombre === p1);
+  const persona2 = registros[registroActivo].personas.find(p => p.nombre === p2);
+
+  let resultado = "";
+
+  persona1.actividades.forEach(a1 => {
+
+    const a2 = persona2.actividades.find(a => a.nombre === a1.nombre);
+
+    if(a2 && a1.fin && a2.fin){
+
+      const t1 = minutos(a1.inicio, a1.fin, a1.fecha, a1.fechaFin);
+const t2 = minutos(a2.inicio, a2.fin, a2.fecha, a2.fechaFin);
+      if(t1 > t2){
+  resultado += `<span class="foco rojo"></span> ${a1.nombre}: ${p1} tardó más<br>`;
+} 
+else if(t2 > t1){
+  resultado += `<span class="foco rojo"></span> ${a1.nombre}: ${p2} tardó más<br>`;
+} 
+else {
+  resultado += `<span class="foco verde"></span> ${a1.nombre}: igual tiempo<br>`;
+}
+    }
+
+  });
+
+  document.getElementById("resultadoComparacion").innerHTML =
+    resultado || "No hay actividades en común";
+}
+function minutos(inicio, fin, fechaInicio, fechaFin){
+
+  if(!fin) return 0;
+
+  const inicioDate = new Date(`${fechaInicio}T${inicio}`);
+  const finDate = new Date(`${fechaFin || fechaInicio}T${fin}`);
+
+  return Math.floor((finDate - inicioDate) / 60000);
+}
+function formatoHora(hora){
+
+  let [h,m] = hora.split(":").map(Number);
+
+  let sufijo = h >= 12 ? "PM" : "AM";
+
+  h = h % 12;
+  if(h === 0) h = 12;
+
+  return `${h}:${m.toString().padStart(2,"0")} ${sufijo}`;
+}
+function llenarSelects(){
+
+  const select1 = document.getElementById("persona1");
+  const select2 = document.getElementById("persona2");
+
+  select1.innerHTML = `<option value="">Seleccionar persona</option>`;
+select2.innerHTML = `<option value="">Seleccionar persona</option>`;
+
+  registros[registroActivo].personas.forEach(p => {
+
+  select1.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+  select2.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+
+});
+}
+function totalHorasPersona(persona){
+
+  let total = 0;
+
+  persona.actividades.forEach(a => {
+    if(a.fin){
+      total += minutos(a.inicio, a.fin, a.fecha, a.fechaFin);
+    }
+  });
+
+  return total; // en minutos
+}
+function formatoHoras(min){
+
+  let h = Math.floor(min / 60);
+  let m = min % 60;
+
+  return `${h}h ${m}m`;
+}
+function generarRanking(){
+
+  let lista = registros[registroActivo].personas.map(p => {
+    return {
+      nombre: p.nombre,
+      minutos: totalHorasPersona(p)
+    };
+  });
+
+  lista.sort((a,b) => b.minutos - a.minutos);
+
+  let html = `<div class="cardAnalisis">
+  <h2>📊 Análisis de productividad</h2>
+  <h3>🏆 Ranking</h3>`;
+
+  lista.forEach((p,i) => {
+
+    let ancho = Math.min(p.minutos / 5, 100);
+
+    html += `
+    <div class="itemRanking">
+      
+      <div class="rankingTop">
+        <span class="posicion">#${i+1}</span>
+        <span class="nombre">${p.nombre}</span>
+        <span class="horas">${formatoHoras(p.minutos)}</span>
+      </div>
+
+      <div class="barraFondo">
+        <div class="barraProgreso" style="width:${ancho}%"></div>
+      </div>
+
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  document.getElementById("ranking").innerHTML = html;
+}
+function generarGrafica(){
+
+  let contenedor = document.getElementById("grafica");
+  contenedor.innerHTML = "";
+
+  let lista = registros[registroActivo].personas;
+
+  lista.forEach(p => {
+
+    let total = totalHorasPersona(p);
+
+    let barra = `
+    <div style="margin-bottom:10px;">
+      <strong>${p.nombre}</strong>
+      <div style="
+        height:20px;
+        background:#2e7d32;
+        width:${Math.min(total/5, 300)}px;
+        border-radius:5px;
+      "></div>
+      ${formatoHoras(total)}
+    </div>
+    `;
+
+    contenedor.innerHTML += barra;
+  });
+}
+function dashboard(){
+  generarRanking();
+ 
+}
+function irAnalisis(){
+
+  generarRanking();
+  
+  mostrar("analisis"); // 🔥 cambia de pantalla
+}
+function registro(){
+  const email = correo.value;
+  const pass = password.value;
+
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(()=>{
+      alert("Cuenta creada");
+    })
+    .catch(e => alert(e.message));
+}
+function login(){
+  const email = correo.value;
+  const pass = password.value;
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(()=>{
+      console.log("Login correcto");
+    })
+    .catch(e => {
+      console.error(e);
+      
+      if(e.code === "auth/user-not-found"){
+        alert("Usuario no existe");
+      } else if(e.code === "auth/wrong-password"){
+        alert("Contraseña incorrecta");
+      } else if(e.code === "auth/invalid-email"){
+        alert("Correo inválido");
+      } else {
+        alert(e.message);
+      }
+    });
+}
+function logout(){
+  auth.signOut()
+    .then(()=>{
+      console.log("Sesión cerrada");
+    })
+    .catch(e => alert(e.message));
+}
+
+// ================= INIT =================
+actualizarRegistros();
+
+</script>
+
+</body>
+</html>
