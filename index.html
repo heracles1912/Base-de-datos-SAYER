@@ -12,6 +12,37 @@
 <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
 
 <style>
+    .filaAcciones{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+}
+
+.filaBloqueos{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:6px;
+  opacity:0.85;
+}
+    .btnBloqueado {
+  background: #fecaca !important;
+  color: #b91c1c !important;
+  cursor: not-allowed;
+}
+
+.btnActivo {
+  background: #bbf7d0 !important;
+  color: #166534 !important;
+}
+  #modalUsuarioCreado .modalContenido{
+  background:#5280ca;
+  color:white;
+}
+
+#modalUsuarioCreado strong{
+  color:#38bdf8;
+}
 .tablaActividades tbody tr:nth-child(odd){
   background:#ffffff;
 }
@@ -310,6 +341,21 @@
   background:#256628;
   transform:translateY(-1px);
 }
+.btnRojos{
+  background:#28b33a;
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.2s;
+}
+
+.btnRojos:hover{
+  background:#046b21;
+  transform:translateY(-1px);
+}
  .btnRojo{
   background:#e90303;
   color:white;
@@ -597,18 +643,15 @@ background:#f2f2f2;
 }
 
 .seccion{
-  display:none;
+display:none;
+  max-width:1000px;
+  margin:40px auto;
 
-  max-width:1000px; /* 👈 limita ancho */
-  margin:40px auto; /* 👈 centra horizontal */
-
- 
- background: rgba(255,255,255,0.7); /* 👈 quita el cuadro */
-
+  background: transparent; /* 👈 AQUÍ */
   padding:30px;
 
-  border-radius:20px; /* 👈 esquinas modernas */
-  box-shadow:0 10px 30px rgba(0,0,0,0.08); /* 👈 profundidad */
+  border-radius:20px;
+  box-shadow:none; /* 👈 quita sombra también */
 }
 
 .seccion.activo{
@@ -1148,7 +1191,13 @@ margin-bottom:15px;
   height:100vh;
   background:transparent; /* 👈 quita el cuadro */
 }
-
+.loginContainere{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background:transparent; /* 👈 quita el cuadro */
+}
 /* TARJETA */
 .loginCard{
   background:white;
@@ -1209,6 +1258,7 @@ margin-bottom:15px;
 }
 body{
   background: linear-gradient(135deg, #afccf1, #cbd5e1);
+  padding-top:80px;
 }
 .modal{
   position:fixed;
@@ -1306,10 +1356,47 @@ body{
   color:#16a34a;
   font-weight:bold;
 }
+.headerSistema{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:70px;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  z-index:1000;
+}
+
+.logoGlobal{
+  height:69px;
+  object-fit:contain;
+}
 </style>
 </head>
 
 <body>
+
+    <div class="headerSistema">
+  <img src="logosayer.png" alt="Logo SAYER" class="logoGlobal">
+</div>
+  <div id="inicio" class="seccion activo">
+
+  <div class="loginContainere">
+    <div class="loginCard">
+      
+      <h2>Selecciona tipo de acceso</h2>
+
+      <button class="btnLogin" onclick="irAdmin()">👑 Administrador</button>
+
+      <button class="btnSecundario" onclick="irUsuario()">👷 Usuario</button>
+
+    </div>
+  </div>
+
+</div>
 <div id="modalEditar" class="modal oculto">
 
   <div class="modalContenido">
@@ -1325,10 +1412,41 @@ body{
   </div>
 
 </div>
-<!-- ================= VIZUALIZAR REGISTRO  ================= -->
-<div id="login" class="loginContainer seccion">
+<div id="loginUsuario" class="seccion">
 
+  <div class="loginContainer">
+    <div class="loginCard">
+
+      <h2>👷 Acceso Usuario</h2>
+
+      <input id="correoUsuario" placeholder="Correo">
+      <div style="position:relative;">
+  <input id="passwordUsuario" type="password" placeholder="Contraseña">
+
+  <span onclick="togglePasswordUsuario()" 
+        style="
+        position:absolute;
+        right:10px;
+        top:50%;
+        transform:translateY(-50%);
+        cursor:pointer;
+        font-size:14px;">
+    👁
+  </span>
+</div>
+
+      <button class="btnLogin" onclick="loginUsuario()">Entrar</button>
+      <button onclick="logout()" class="btnRojo">Volver</button>
+
+    </div>
+  </div>
+
+</div>
+<!-- ================= VIZUALIZAR REGISTRO  ================= -->
+<div id="loginAdmin" class="seccion">
+<div class="loginContainer">
   <div class="loginCard">
+    
     <h2>🔐 Iniciar sesión</h2>
 
     <input id="correo" placeholder="Correo electrónico">
@@ -1347,12 +1465,13 @@ body{
   </span>
 </div>
 
-    <button class="btnLogin" onclick="login()">Entrar</button>
-    <button class="btnSecundario" onclick="registro()">Crear cuenta</button>
+    <button class="btnLogin" onclick="loginAdmin()">Entrar</button>
+    <button onclick="logout()" class="btnRojo">Volver</button>
+    <button class= "btnRojos"  onclick="crearAdminsSeguro()">🚀 Cargar admins</button>
   </div>
 
 </div>
-
+</div>
 <div id="registros" class="seccion">
 
 <div class="contenedorRegistros">
@@ -1373,7 +1492,7 @@ body{
 <div class="panelFormulario">
 
 <div class="formActividad">
-
+<h3 id="bienvenidaAdmin"> Bienvenido</h3>
 <h2>Registro de nuevo mes</h2>
 
 
@@ -1471,8 +1590,10 @@ Guardar registro
   <!-- IZQUIERDA -->
   <div class="panelFormularioPozo card">
 <div class="formActividad">
-    <h2 id="tituloPersona"></h2>
-
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+  <h2 id="tituloPersona"></h2>
+ 
+</div>
     <h3>Agregar Actividad</h3>
 <div class="grupoCampo">
   <label>Fecha</label>
@@ -1491,7 +1612,12 @@ Guardar registro
 
 
     <button class="btnVerde" onclick="guardarActividad()">Guardar actividad</button>
-    <button class="btnRojo" onclick="volverAPersonas()">⬅ Volver</button>
+ <button id="btnLogoutUsuario" class="btnRojo oculto">
+    ⬅ Volver
+  </button>
+<button id="btnVolverAdmin" class="btnRojo" style="margin-top:10px;">
+  ⬅ Volver
+</button>
 
   </div>
 </div>
@@ -1500,6 +1626,7 @@ Guardar registro
   <div class="panelListaPozos card">
 
     <h3>Lista de Actividades</h3>
+ 
 
    <table class="tablaActividades">
   <thead>
@@ -1559,7 +1686,25 @@ Guardar registro
   </div>
 
 </div>
+
+<div id="modalUsuarioCreado" class="modal oculto">
+  <div class="modalContenido">
+    <h3>✅ Usuario creado</h3>
+
+    <p><strong>Email:</strong> <span id="nuevoEmail"></span></p>
+    <p><strong>Password:</strong> <span id="nuevoPassword"></span></p>
+
+    <div class="accionesModal">
+      <button class="btnGuardarModal" onclick="cerrarModalUsuario()">
+        Aceptar
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
+    
+  let rolUsuario = null;
 function compararActividadesGlobal(){
 
   // 🔥 limpiar estados
@@ -1638,16 +1783,34 @@ const meses = {
   mayo:4, junio:5, julio:6, agosto:7,
   septiembre:8, octubre:9, noviembre:10, diciembre:11
 };
+function generarColor(i){
+  const hue = (i * 137) % 360;
+  return `FF${hslToHex(hue, 70, 90).replace("#","")}`;
+}
 
+function hslToHex(h, s, l){
+  s /= 100;
+  l /= 100;
+
+  let c = (1 - Math.abs(2*l - 1)) * s;
+  let x = c * (1 - Math.abs((h/60) % 2 - 1));
+  let m = l - c/2;
+  let r=0, g=0, b=0;
+
+  if(h<60){r=c; g=x; b=0;}
+  else if(h<120){r=x; g=c; b=0;}
+  else if(h<180){r=0; g=c; b=x;}
+  else if(h<240){r=0; g=x; b=c;}
+  else if(h<300){r=x; g=0; b=c;}
+  else{r=c; g=0; b=x;}
+
+  r = Math.round((r+m)*255);
+  g = Math.round((g+m)*255);
+  b = Math.round((b+m)*255);
+
+  return "#" + [r,g,b].map(x => x.toString(16).padStart(2,"0")).join("");
+}
 let personaActiva = null;
-auth.onAuthStateChanged(user => {
-  if(user){
-    escucharRegistros(); // 👈 nuevo
-    mostrar("registros");
-  } else {
-    mostrar("login");
-  }
-});
 
 let registroActivo = null;
 
@@ -1670,8 +1833,15 @@ const anio = document.getElementById("anio").value;
     mes: nombreMes,
     mesNum: meses[mesLimpio],
     anio: parseInt(anio),
-    personas: []
-  });
+    personas: [],
+    permisos: {        // 👈 SOLO AQUÍ
+      editar: true,
+      eliminar: true
+    }
+  }).then(() => {
+  escucharRegistros(); // 🔥 RECARGA AUTOMÁTICA
+});
+
 
   document.getElementById("MES").value = "";
 document.getElementById("anio").value = "";
@@ -1696,7 +1866,7 @@ lista.innerHTML = "";
       </div>
 
       <div class="accionesPersona">
-        <button onclick="event.stopPropagation(); eliminarRegistro('${r.id}')">🗑</button>
+        <button onclick="eliminarRegistro('${r.id}', event)">🗑</button>
       </div>
 
     </li>`;
@@ -1707,21 +1877,70 @@ lista.innerHTML = "";
 function escucharRegistros(){
 
   db.collection("registros")
-  .onSnapshot(snapshot => {
+    .orderBy("anio","desc")
+    .limit(10)
+    .onSnapshot(snapshot => {
 
-    registros = [];
+      registros = [];
 
-    snapshot.forEach(doc => {
-      registros.push({
-        id: doc.id,
-        ...doc.data()
+      snapshot.forEach(doc => {
+        registros.push({
+          id: doc.id,
+          ...doc.data()
+        });
       });
-    });
 
-    actualizarRegistros();
+      actualizarRegistros();
+
+      // 🔥 resto igual...
+      if(rolUsuario === "usuario" && auth.currentUser){
+
+        const user = auth.currentUser;
+
+        for(let r of registros){
+
+          const index = r.personas?.findIndex(p => p.uid === user.uid);
+
+          if(index !== -1){
+
+            registroActivo = r;
+            personaActiva = index;
+            actualizarBotones();
+
+            document.getElementById("tituloPersona").innerText =
+              "Persona: " + r.personas[index].nombre;
+
+            mostrarActividades();
+            mostrar("detallePersona");
+
+            return;
+          }
+        }
+
+        alert("No estás asignado a ningún registro");
+      }
+
+    });
+}
+function logoutUsuario(){
+
+  auth.signOut().then(()=>{
+
+    rolUsuario = null;
+    personaActiva = null;
+    registroActivo = null;
+
+    document.getElementById("correoUsuario").value = "";
+    document.getElementById("passwordUsuario").value = "";
+
+    mostrar("inicio");
+
   });
 }
-function eliminarRegistro(id){
+function eliminarRegistro(id, e){
+
+  if(e) e.stopPropagation(); // 🔥 esto evita que abra el mes
+
   if(confirm("Eliminar este mes?")){
     db.collection("registros").doc(id).delete();
   }
@@ -1742,7 +1961,7 @@ function obtenerFechaMes(texto){
 }
 // ================= SELECCIONAR MES =================
 function seleccionarRegistro(id){
-
+document.getElementById("resultadoComparacion").innerHTML = "";
   // 🔥 cancelar escucha anterior
   if(unsubscribeDoc){
     unsubscribeDoc();
@@ -1759,20 +1978,67 @@ function seleccionarRegistro(id){
       };
 
       document.getElementById("tituloMes").innerText = "MES: " + registroActivo.mes;
-
-      actualizarPersonas();
-      llenarSelects();
+    actualizarPersonas();
+if(registroActivo.personas){
+  llenarSelects();
+}
+aplicarPermisos();
+// 👇 SI YA HABÍA PERSONA, REGRESARLA
+if(personaActiva !== null){
+  mostrar("detallePersona");
+  mostrarActividades();
+} else {
+  mostrar("pozos");
+}
 
       // 👇 si estás dentro de una persona, refresca actividades
       if(personaActiva !== null){
         mostrarActividades();
       }
+
+   
+
+// 👇 ASEGURAR PERMISOS
+if(!registroActivo.permisos){
+  registroActivo.permisos = {
+    editar: true,
+    eliminar: true
+  };
+}
     });
 
-  mostrar("pozos");
+  
 }
 
 // ================= POZOS =================
+function generarPassword(){
+
+  const mayus = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const minus = "abcdefghijklmnopqrstuvwxyz";
+  const numeros = "0123456789";
+  const simbolos = "@#$%&*";
+
+  const todo = mayus + minus + numeros + simbolos;
+
+  let password = "";
+
+  // 🔥 aseguramos mínimo de cada tipo
+  password += mayus[Math.floor(Math.random() * mayus.length)];
+  password += minus[Math.floor(Math.random() * minus.length)];
+  password += numeros[Math.floor(Math.random() * numeros.length)];
+  password += simbolos[Math.floor(Math.random() * simbolos.length)];
+
+  // 🔥 completar hasta 10 caracteres
+  for(let i = 4; i < 10; i++){
+    password += todo[Math.floor(Math.random() * todo.length)];
+  }
+
+  // 🔀 mezclar (shuffle)
+  password = password.split('').sort(() => 0.5 - Math.random()).join('');
+
+  return password;
+}
+
 function guardarPersona(){
 
   const nombre = document.getElementById("nombrePersona").value;
@@ -1783,50 +2049,135 @@ function guardarPersona(){
     return;
   }
 
-  registroActivo.personas.push({
-    nombre,
-    puesto,
-    actividades:[]
-  });
+  const email = nombre.replaceAll(" ","").toLowerCase() + "@usuariosayer.com";
+  const password = generarPassword();
 
-  db.collection("registros")
-    .doc(registroActivo.id)
-    .update({
-      personas: registroActivo.personas
-    });
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
 
+      const uid = userCredential.user.uid;
+      const existe = registroActivo.personas.some(p => p.uid === uid);
+
+if(existe){
+  alert("Esta persona ya existe");
+  return;
+}
+      console.log("UID CREADO:", uid); // 🔥 DEBUG
+
+     registroActivo.personas.push({
+  nombre,
+  puesto,
+  uid,
+  email,
+  password, // 🔥 agregar esto
+  actividades:[]
+        });
+      return db.collection("registros")
+        .doc(registroActivo.id)
+       .update({
+  personas: JSON.parse(JSON.stringify(registroActivo.personas))
+})
+.then(() => {
+  mostrarModalUsuario(email, password);
+
+
+  // ✅ LIMPIAR CAMPOS
   document.getElementById("nombrePersona").value = "";
-  document.getElementById("puestoPersona").value="";
+  document.getElementById("puestoPersona").value = "";
 
-  actualizarPersonas();
-llenarSelects();
+  // ✅ ENFOCAR INPUT NOMBRE
+  document.getElementById("nombrePersona").focus();
+});
+
+    })
+    .catch(e => {
+      console.error(e);
+      alert(e.message);
+    });
 }
 
 // ================= MOSTRAR POZOS =================
 function actualizarPersonas(){
 
   const lista = document.getElementById("listaPersonas");
+  lista.innerHTML = "";
+
+  const btnAnalisis = document.querySelector("[onclick='irAnalisis()']");
+
+// 🔥 SI NO HAY PERSONAS
+if(!registroActivo.personas || registroActivo.personas.length === 0){
+
+  lista.innerHTML = ""; // 👈 sin mensaje
+
+  if(btnAnalisis){
+    btnAnalisis.disabled = true; // 🔒 bloquear
+    btnAnalisis.style.opacity = "0.5"; // opcional visual
+    btnAnalisis.style.cursor = "not-allowed";
+  }
+
+  return;
+}
+
+if(btnAnalisis){
+
+  btnAnalisis.classList.remove("oculto"); // 🔥 SIEMPRE limpiar primero
+
+  if(rolUsuario === "admin"){
+    btnAnalisis.disabled = false;
+    btnAnalisis.style.opacity = "1";
+    btnAnalisis.style.cursor = "pointer";
+  } 
+  else {
+    btnAnalisis.classList.add("oculto"); // 👷 usuario no lo ve
+  }
+
+}
+
 lista.innerHTML = "";
 
-  registroActivo.personas.forEach((p,i)=>{
+const fragment = document.createDocumentFragment();
 
-    lista.innerHTML += `
-    <li class="itemPersona" onclick="abrirPersona(${i})">
+registroActivo.personas.forEach((p,i)=>{
 
+  if(rolUsuario === "usuario"){
+    const user = auth.currentUser;
+    if(!user || p.uid !== user.uid) return;
+  }
+
+  const li = document.createElement("li");
+  li.className = "itemPersona";
+
+  li.innerHTML = `
+    <div onclick="abrirPersona(${i})" style="cursor:pointer;">
       <div class="infoPersona">
-  <span class="iconoPersona">👤</span> ${p.nombre}
-  <br><br>
-  <small style="color:#777;">${p.puesto}</small>
-</div>
+        <span class="iconoPersona">👤</span> ${p.nombre}
+        <br><br>
+        <small style="color:#777;">${p.puesto}</small>
+      </div>
+    </div>
 
-      <div class="accionesPersona">
-  <button onclick="event.stopPropagation(); abrirEditar(${i})">✏️</button>
-  <button onclick="event.stopPropagation(); eliminarPersona(${i})">🗑</button>
-</div>
+    <div class="accionesPersona">
+      <button onclick="event.stopPropagation(); verCredenciales(${i})">👁</button>
+      <button onclick="event.stopPropagation(); abrirEditar(${i})">✏️</button>
+      <button onclick="event.stopPropagation(); eliminarPersona(${i})">🗑</button>
+    </div>
+  `;
 
-    </li>`;
-    
-  });
+  fragment.appendChild(li);
+});
+
+lista.appendChild(fragment);
+}
+function verCredenciales(i){
+
+  const persona = registroActivo.personas[i];
+
+  document.getElementById("nuevoEmail").innerText = persona.email;
+  document.getElementById("nuevoPassword").innerText = persona.password || "No disponible";
+
+  document.getElementById("modalUsuarioCreado")
+    .classList.remove("oculto");
+
 }
 function abrirEditar(i){
 
@@ -1841,13 +2192,16 @@ function abrirEditar(i){
 }
 // ================= ELIMINAR =================
 function eliminarPersona(i){
+
+  if(!confirm("¿Eliminar esta persona?")) return;
+
   registroActivo.personas.splice(i,1);
- 
+
   db.collection("registros")
   .doc(registroActivo.id)
   .update({
-    personas: registroActivo.personas
-  });
+  personas: JSON.parse(JSON.stringify(registroActivo.personas))
+});
   actualizarPersonas();
 }
 function editarPersona(i){
@@ -1874,9 +2228,9 @@ function guardarEdicion(){
 
   db.collection("registros")
     .doc(registroActivo.id)
-    .update({
-      personas: registroActivo.personas
-    });
+   .update({
+  personas: JSON.parse(JSON.stringify(registroActivo.personas))
+});
 
   cerrarModal();
 }
@@ -1884,51 +2238,122 @@ function cerrarModal(){
   document.getElementById("modalEditar").classList.add("oculto");
 }
 function eliminarActividad(i){
+
+     const confirmar = confirm(
+  "🗑 Eliminar actividad\n\n" +
+  "Esta acción eliminará la actividad permanentemente.\n\n" +
+  "¿Deseas continuar?"
+);
+
+  if(!confirmar) return;
+
+   if(rolUsuario === "usuario" && !registroActivo.personas[personaActiva].actividades[i].permisos?.eliminar){
+  alert("Eliminación bloqueada por administrador");
+  return;
+}
+
  registroActivo.personas[personaActiva].actividades.splice(i,1);
 
   db.collection("registros")
   .doc(registroActivo.id)
   .update({
-    personas: registroActivo.personas
-  });
+  personas: JSON.parse(JSON.stringify(registroActivo.personas))
+});
   mostrarActividades();
 }
 
+function limpiarUI(){
+  document.getElementById("listaActividades").innerHTML = "";
+  document.getElementById("resultadoComparacion").innerHTML = "";
+}
 // ================= GUARDADO =================
 
 // ================= NAVEGACIÓN =================
 function mostrar(id){
 
-  // ocultar login manualmente
-  document.getElementById("login").style.display = "none";
+  // 🔥 limpiar comparador
+  const comp = document.getElementById("resultadoComparacion");
+  if(comp) comp.innerHTML = "";
+
+  // 🔥 limpiar selects
+  const selects = ["persona1","persona2","persona3","persona4"];
+  selects.forEach(idSelect => {
+    const select = document.getElementById(idSelect);
+    if(select){
+      select.selectedIndex = 0;
+    }
+  });
+
+  // 🔥 limpiar tabla
+  const tabla = document.getElementById("listaActividades");
+ if(tabla && id !== "detallePersona"){
+  tabla.innerHTML = "";
+}
+  
+
+  // 🔥 limpiar inputs
+  const act = document.getElementById("actividadNombre");
+  const hora = document.getElementById("horaInicio");
+  const fecha = document.getElementById("fechaActividad");
+
+  if(act) act.value = "";
+  if(hora) hora.value = "";
+  if(fecha) fecha.value = "";
+
+  // 🔐 control usuario
+  if(rolUsuario === "usuario" && auth.currentUser){
+    if(id !== "detallePersona" && id !== "inicio"){
+      return;
+    }
+  }
 
   document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activo"));
   document.getElementById(id).classList.add("activo");
-
-  // si quieres volver a mostrar login
-  if(id === "login"){
-    document.getElementById("login").style.display = "flex";
-  }
 }
-
 function volverRegistros(){
+
+  personaActiva = null;
+  
+
+  document.getElementById("listaActividades").innerHTML = "";
+
+  // 🔥 LIMPIAR COMPARADOR
+  document.getElementById("resultadoComparacion").innerHTML = "";
+
   mostrar("registros");
 }
+
 function abrirPersona(i){
+
+    document.getElementById("listaActividades").innerHTML = "";
+
+  if(rolUsuario === "usuario"){
+    const user = auth.currentUser;
+    if(registroActivo.personas[i].uid !== user.uid){
+      alert("No tienes acceso");
+      return;
+    }
+  }
+
   personaActiva = i;
 
-  const lista = document.getElementById("listaActividades");
-lista.innerHTML = "";
+  const persona = registroActivo.personas[i];
 
-  const persona =registroActivo.personas[i];
+  document.getElementById("tituloPersona").innerText =
+    "Persona: " + persona.nombre;
 
- document.getElementById("tituloPersona").innerText = "Persona: " + persona.nombre;
+  actualizarBotones();
 
   mostrarActividades();
-
-  mostrar("detallePersona"); // 🔥 cambio de pantalla
+  mostrar("detallePersona");
 }
+
 function volverAPersonas(){
+
+ 
+
+  document.getElementById("listaActividades").innerHTML = "";
+
   mostrar("pozos");
 }
 function guardarActividad(){
@@ -1947,26 +2372,41 @@ function guardarActividad(){
     return;
   }
 
-  registroActivo.personas[personaActiva].actividades.push({
-    nombre,
-    inicio,
-    fin: null,
-    fecha
-  });
+ registroActivo.personas[personaActiva].actividades.push({
+  nombre,
+  inicio,
+  fin: null,
+  fecha,
+  fechaCreacion: Date.now(),
+  permisos: {
+    editar: false,
+    eliminar: false
+  }
+});
+ document.getElementById("actividadNombre").value = "";
+document.getElementById("horaInicio").value = "";
+document.getElementById("fechaActividad").value = "";
 
-  actividadNombre.value="";
-  horaInicio.value="";
-  fechaActividad.value="";
+// 🔥 opcional: foco bonito
+document.getElementById("actividadNombre").focus();
 
 
-  db.collection("registros")
+ db.collection("registros")
   .doc(registroActivo.id)
   .update({
-    personas: registroActivo.personas
-  });
-  mostrarActividades();
+    personas: JSON.parse(JSON.stringify(registroActivo.personas))
+  })
+ .then(() => {
+  mostrarActividades(); // 👈 AGREGA ESTO
+});
+  
 }
+
 function mostrarActividades(){
+console.log("Persona activa:", personaActiva);
+console.log("Registro activo:", registroActivo);
+    if(personaActiva === null || !registroActivo) return;
+if(!registroActivo.personas || !registroActivo.personas[personaActiva]) return;
 
   const lista = document.getElementById("listaActividades");
 lista.innerHTML = "";
@@ -1976,9 +2416,11 @@ lista.innerHTML = "";
   // 🔥 AQUÍ VA
   persona.actividades.sort((a,b)=> new Date(a.fecha) - new Date(b.fecha));
 
-  persona.actividades.forEach((a,i)=>{
+let html = "";
 
-    lista.innerHTML += `
+persona.actividades.forEach((a,i)=>{
+
+  html += `
     <tr>
 
       <td>📝 ${a.nombre}</td>
@@ -1986,29 +2428,65 @@ lista.innerHTML = "";
       <td>${formatoHora(a.inicio)}</td>
 
       <td>
-  ${
-    !a.fin
-  ? `<div class="finPendiente">
-  <span>⏱ En proceso</span>
-  <input type="date" id="fechaFin_${i}">
-  <input type="time" id="fin_${i}">
-  <button onclick="finalizarActividad(${i})">✔</button>
-</div>`
-    : formatoHora(a.fin)
-  }
-</td>
+        ${
+          !a.fin
+          ? `<div class="finPendiente">
+              <span>⏱ En proceso</span>
+              <input type="date" id="fechaFin_${i}">
+              <input type="time" id="fin_${i}">
+              <button onclick="finalizarActividad(${i})">✔</button>
+            </div>`
+          : formatoHora(a.fin)
+        }
+      </td>
 
-     <td>${calcularHoras(a.inicio, a.fin, a.fecha, a.fechaFin)}</td>
-      <td>
-  <div class="accionesTabla">
-    <button class="btnIcono" onclick="editarActividad(${i})">✏️</button>
-    <button class="btnIcono" onclick="eliminarActividad(${i})">🗑</button>
+      <td>${calcularHoras(a.inicio, a.fin, a.fecha, a.fechaFin)}</td>
+
+     
+<td>
+
+  <!-- FILA 1: BOTONES PRINCIPALES -->
+  <div class="filaAcciones">
+
+    <button 
+      class="btnIcono ${!a.permisos?.editar ? "btnBloqueado" : "btnActivo"}"
+      onclick="editarActividad(${i})"
+      ${(rolUsuario === "usuario" && !a.permisos?.editar) ? "disabled" : ""}
+    >
+      ✏️
+    </button>
+
+    <button 
+      class="btnIcono ${!a.permisos?.eliminar ? "btnBloqueado" : "btnActivo"}"
+      onclick="eliminarActividad(${i})"
+      ${(rolUsuario === "usuario" && !a.permisos?.eliminar) ? "disabled" : ""}
+    >
+      🗑
+    </button>
+
   </div>
+
+  <!-- FILA 2: BLOQUEOS -->
+  ${rolUsuario === "admin" ? `
+    <div class="filaBloqueos">
+      <button class="btnIcono" onclick="toggleEditarActividad(${i})">🔒✏️</button>
+      <button class="btnIcono" onclick="toggleEliminarActividad(${i})">🔒🗑</button>
+    </div>
+  ` : ""}
+
 </td>
     </tr>`;
-  });
+});
+
+lista.innerHTML = html;
 }
 function editarActividad(i){
+
+
+   if(rolUsuario === "usuario" && !registroActivo.personas[personaActiva].actividades[i].permisos?.editar){
+  alert("Edición bloqueada por administrador");
+  return;
+}
 
   indexActividadEditando = i;
 
@@ -2041,9 +2519,8 @@ function guardarActividadEditada(){
 
   // 🔥 VALIDACIÓN DE TIEMPOS
   if(fin){
-    const inicioDate = new Date(`${fechaInicio}T${inicio}`);
-    const finDate = new Date(`${fechaFin || fechaInicio}T${fin}`);
-
+  const inicioDate = construirFecha(fechaInicio, inicio);
+const finDate = construirFecha(fechaFin || fechaInicio, fin);
     if(finDate < inicioDate){
       alert("La hora final no puede ser menor a la inicial");
       return;
@@ -2059,8 +2536,8 @@ function guardarActividadEditada(){
   db.collection("registros")
     .doc(registroActivo.id)
     .update({
-      personas: registroActivo.personas
-    });
+  personas: JSON.parse(JSON.stringify(registroActivo.personas))
+});
 
   cerrarModalActividad();
   mostrarActividades();
@@ -2080,8 +2557,8 @@ function finalizarActividad(i){
 
   const actividad = registroActivo.personas[personaActiva].actividades[i];
 
-  const inicioDate = new Date(`${actividad.fecha}T${actividad.inicio}`);
-  const finDate = new Date(`${fechaFin || actividad.fecha}T${fin}`);
+  const inicioDate = construirFecha(actividad.fecha, actividad.inicio);
+const finDate = construirFecha(fechaFin || actividad.fecha, fin);
 
   // 🔥 VALIDACIÓN AQUÍ (solo 1 vez)
   if(finDate < inicioDate){
@@ -2094,10 +2571,9 @@ function finalizarActividad(i){
 
   db.collection("registros")
     .doc(registroActivo.id)
-    .update({
-      personas: JSON.parse(JSON.stringify(registroActivo.personas))
-    });
-
+   .update({
+  personas: JSON.parse(JSON.stringify(registroActivo.personas))
+});
   mostrarActividades();
 }
 function calcularHoras(inicio, fin, fechaInicio, fechaFin){
@@ -2127,21 +2603,29 @@ function compararPersonas(){
     persona2.value,
     persona3.value,
     persona4.value
-  ].filter(n => n); // elimina vacíos
+  ].filter(n => n);
 
+  // 🔥 mínimo 2
   if(nombres.length < 2){
     alert("Selecciona al menos 2 personas");
     return;
   }
 
-  // obtener objetos persona
+  // 🔥 VALIDAR DUPLICADOS
+  const unicos = new Set(nombres);
+
+  if(unicos.size !== nombres.length){
+    alert("No puedes comparar la misma persona varias veces");
+    return;
+  }
+
+  // 👇 lo demás igual
   const personas = nombres.map(n =>
     registroActivo.personas.find(p => p.nombre === n)
   );
 
   let html = "";
 
-  // tomar actividades de la primera persona como base
   personas[0].actividades.forEach(act => {
 
     const nombreAct = act.nombre.toLowerCase().trim();
@@ -2165,7 +2649,6 @@ function compararPersonas(){
 
     if(tiempos.length >= 2){
 
-      // ordenar de mayor a menor (más lento primero)
       tiempos.sort((a,b) => b.tiempo - a.tiempo);
 
       html += `<div class="cardResultado">`;
@@ -2173,20 +2656,14 @@ function compararPersonas(){
 
       tiempos.forEach((t,i) => {
 
-  let color = "";
+        let color = "";
 
-  if(i === 0){
-    color = "rojo"; // más lento
-  }
-  else if(i === tiempos.length - 1){
-    color = "verde"; // más rápido
-  }
+        if(i === 0) color = "rojo";
+        else if(i === tiempos.length - 1) color = "verde";
 
-        html += `
-          <div class="${color}">
-            ${t.persona}: ${formatoHoras(t.tiempo)}
-          </div>
-        `;
+        html += `<div class="${color}">
+          ${t.persona}: ${formatoHoras(t.tiempo)}
+        </div>`;
       });
 
       html += `</div>`;
@@ -2223,6 +2700,10 @@ function formatoHora(hora){
 }
 function llenarSelects(){
 
+  if(!registroActivo || !registroActivo.personas){
+    return; // 🔥 evitar error
+  }
+
   const selects = [
     document.getElementById("persona1"),
     document.getElementById("persona2"),
@@ -2231,6 +2712,8 @@ function llenarSelects(){
   ];
 
   selects.forEach(select => {
+    if(!select) return;
+
     select.innerHTML = `<option value="">Seleccionar persona</option>`;
 
     registroActivo.personas.forEach(p => {
@@ -2347,10 +2830,15 @@ function dashboard(){
   generarRanking();
  
 }
+
 function irAnalisis(){
-  generarDashboardPersonas(); // 👈 en lugar de ranking
+
+  document.getElementById("listaActividades").innerHTML = ""; // 🔥 limpiar
+
+  generarDashboardPersonas();
   mostrar("analisis");
 }
+
 function registro(){
   const email = document.getElementById("correo").value;
 const pass = document.getElementById("password").value;
@@ -2361,6 +2849,7 @@ const pass = document.getElementById("password").value;
     })
     .catch(e => alert(e.message));
 }
+
 function login(){
   const email = document.getElementById("correo").value;
 const pass = document.getElementById("password").value;
@@ -2383,10 +2872,42 @@ const pass = document.getElementById("password").value;
       }
     });
 }
+
 function logout(){
+
+      if(unsubscribeDoc){
+    unsubscribeDoc(); // 🔥 cortar conexión anterior
+    unsubscribeDoc = null;
+  }
+
+
   auth.signOut()
     .then(()=>{
-      console.log("Sesión cerrada");
+
+      rolUsuario = null;
+      personaActiva = null;
+      registroActivo = null;
+    
+
+      // limpiar comparación
+document.getElementById("resultadoComparacion").innerHTML = "";
+
+// limpiar selects
+document.getElementById("persona1").value = "";
+document.getElementById("persona2").value = "";
+document.getElementById("persona3").value = "";
+document.getElementById("persona4").value = "";
+
+      // 🔥 LIMPIAR INPUTS
+      document.getElementById("correo").value = "";
+      document.getElementById("password").value = "";
+      document.getElementById("correoUsuario").value = "";
+      document.getElementById("passwordUsuario").value = "";
+
+      // 🔥 IR A INICIO
+      document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activo"));
+      document.getElementById("inicio").classList.add("activo");
+
     })
     .catch(e => alert(e.message));
 }
@@ -2412,83 +2933,252 @@ window.onclick = function(e){
     cerrarModalActividad();
   }
 }
+function construirFecha(fecha, hora){
+  if(!fecha || !hora) return null;
 
+  const [year, month, day] = fecha.split("-");
+  const [h, m] = hora.split(":");
+
+  return new Date(
+    parseInt(year),
+    parseInt(month) - 1, // 👈 meses empiezan en 0
+    parseInt(day),
+    parseInt(h),
+    parseInt(m)
+  );
+}
 async function exportarExcel(){
 
-  // 🔥 asigna rojo (más lento) y verde (más rápido)
   compararActividadesGlobal();
 
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Reporte");
 
-  // 🧱 COLUMNAS
+  // 🧱 COLUMNAS (SIN HEADER AUTOMÁTICO)
   sheet.columns = [
-    { header: "Persona", key: "persona", width: 25 },
-    { header: "Puesto", key: "puesto", width: 20 },
-    { header: "Actividad", key: "actividad", width: 30 },
-    { header: "Horas", key: "horas", width: 15 },
-    { header: "Estado", key: "estado", width: 18 }
+    { key: "actividad", width: 35 },
+    { key: "persona", width: 35 },
+    { key: "puesto", width: 20 },
+    { key: "inicio", width: 15 },
+    { key: "fin", width: 15 },
+    { key: "horas", width: 15 },
+    { key: "estado", width: 18 },
+    { key: "fechaRegistro", width: 25 }
   ];
 
-  // 🔵 ENCABEZADO BONITO
-  const header = sheet.getRow(1);
-  header.eachCell(cell => {
+  // 🧾 TITULO
+  sheet.mergeCells("A1:H1");
+  const titulo = sheet.getCell("A1");
+  titulo.value = "REPORTE DE ACTIVIDADES";
+  
+ // 🎨 COLOR
+titulo.fill = {
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FF1E40AF" } // azul
+};
+
+titulo.font = {
+  size: 16,
+  bold: true,
+  color: { argb: "FFFFFFFF" } // blanco
+};
+
+titulo.alignment = {
+  horizontal: "center",
+  vertical: "middle"
+};
+
+
+  // 🕒 SUBTITULO
+  sheet.mergeCells("A2:H2");
+  const fechaGen = sheet.getCell("A2");
+  fechaGen.value = "Generado: " + new Date().toLocaleString();
+  
+// 🎨 COLOR
+fechaGen.fill = {
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FFE0E7FF" } // azul claro
+};
+
+fechaGen.font = {
+  italic: true,
+  size: 10,
+  color: { argb: "FF1E3A8A" }
+};
+
+fechaGen.alignment = {
+  horizontal: "center",
+  vertical: "middle"
+};
+
+// 📏 ALTURA (opcional pero recomendado)
+sheet.getRow(1).height = 30;
+sheet.getRow(2).height = 20;
+  // 🔥 ESPACIO
+  sheet.spliceRows(3, 0, []);
+
+  // 🔥 HEADERS CORRECTOS
+  const headers = [
+    "Actividad",
+    "Persona",
+    "Puesto",
+    "Inicio",
+    "Fin",
+    "Horas",
+    "Estado",
+    "Fecha registro"
+  ];
+
+  const headerRow = sheet.getRow(3);
+
+  headers.forEach((titulo, i) => {
+    headerRow.getCell(i + 1).value = titulo;
+  });
+
+  // 🎨 ESTILO HEADER
+  headerRow.eachCell(cell => {
     cell.fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FF3B82F6" }
+      fgColor: { argb: "FF16A34A" } // VERDE
     };
     cell.font = {
       bold: true,
       color: { argb: "FFFFFFFF" }
     };
-    cell.alignment = { horizontal: "center", vertical: "middle" };
+    cell.alignment = { horizontal: "center" };
   });
 
-// 🔥 juntar todas las actividades en un solo arreglo
-let filas = [];
+  headerRow.height = 25;
 
-registroActivo.personas.forEach(p => {
+  // 📊 FILAS
+  let filas = [];
 
-  p.actividades.forEach(a => {
+  registroActivo.personas.forEach(p => {
 
-    if(!a.fin) return;
+    // 🔴 SIN ACTIVIDADES
+    if(!p.actividades || p.actividades.length === 0){
+      filas.push({
+        persona: p.nombre,
+        puesto: p.puesto,
+        actividad: "Sin actividades",
+        inicio: "-",
+        fin: "-",
+        horas: "--",
+        estado: "",
+        fechaRegistro: new Date().toLocaleString()
+      });
+      return;
+    }
 
-    filas.push({
-      persona: p.nombre,
-      puesto: p.puesto,
-      actividad: a.nombre,
-      horas: formatoHoras(
-        minutos(a.inicio, a.fin, a.fecha, a.fechaFin)
-      ),
-      estado: a.estado
-    });
+    let tieneFinalizadas = false;
 
+   p.actividades.forEach(a => {
+
+  if(a.fin){
+    tieneFinalizadas = true;
+  }
+
+  filas.push({
+    persona: p.nombre,
+    puesto: p.puesto,
+    actividad: a.nombre,
+
+    inicio: `${a.fecha} ${formatoHora(a.inicio)}`,
+
+    fin: a.fin 
+      ? `${a.fechaFin || a.fecha} ${formatoHora(a.fin)}`
+      : "----",
+
+    horas: a.fin
+      ? formatoHoras(
+          minutos(a.inicio, a.fin, a.fecha, a.fechaFin)
+        )
+      : "----",
+
+    estado: a.estado || "",
+
+    fechaRegistro: (a.fecha && a.inicio)
+      ? `${a.fecha} ${formatoHora(a.inicio)}`
+      : ""
   });
 
 });
 
-// 🔥 ordenar GLOBAL por actividad
-filas.sort((a,b) =>
-  a.actividad.localeCompare(b.actividad)
-);
+    // 🟡 SOLO EN PROCESO
+    if(!tieneFinalizadas){
+      filas.push({
+        persona: p.nombre,
+        puesto: p.puesto,
+        actividad: "Sin actividades finalizadas",
+        inicio: "-",
+        fin: "-",
+        horas: "--",
+        estado: "",
+        fechaRegistro: new Date().toLocaleString()
+      });
+    }
 
-// 🔥 meter al Excel
-filas.forEach(f => {
+  });
 
+  // 🔥 ORDENAR
+  filas.sort((a,b)=> a.actividad.localeCompare(b.actividad));
+
+let mapaColores = {};
+let indexColor = 0;
+  // 📥 INSERTAR FILAS
+  filas.forEach(f => {
+      // 🎨 ASIGNAR COLOR POR PERSONA
+   // 🎨 asignar color SOLO si no existe
+  if(!mapaColores[f.persona]){
+   mapaColores[f.persona] = generarColor(indexColor);
+   indexColor++;
+  }
+
+  // 🔤 texto estado
   let estadoTexto = "";
   if(f.estado === "roja") estadoTexto = "MÁS LENTO";
   if(f.estado === "verde") estadoTexto = "MÁS RÁPIDO";
 
+  // 📥 CREAR FILA (esto va SIEMPRE)
   const row = sheet.addRow({
+    actividad: f.actividad,
     persona: f.persona,
     puesto: f.puesto,
-    actividad: f.actividad,
+    inicio: f.inicio,
+    fin: f.fin,
     horas: f.horas,
-    estado: estadoTexto
+    estado: estadoTexto,
+    fechaRegistro: f.fechaRegistro
   });
 
-  // 🔴 rojo
+  // 🎨 aplicar color
+  const colorFila = mapaColores[f.persona];
+
+  row.eachCell(cell => {
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: colorFila }
+    };
+  });
+
+  // 🧾 estilo fecha
+  row.getCell("fechaRegistro").font = {
+    italic: true,
+    size: 10,
+    bold: true,
+    color: { argb: "FF1E40AF" }
+  };
+
+  row.getCell("fechaRegistro").alignment = {
+    horizontal: "center",
+    vertical: "middle"
+  };
+
+  // 🔴🟢 colores estado
   if(f.estado === "roja"){
     row.getCell("estado").font = {
       color: { argb: "FFDC2626" },
@@ -2496,18 +3186,22 @@ filas.forEach(f => {
     };
   }
 
-  // 🟢 verde
   if(f.estado === "verde"){
     row.getCell("estado").font = {
       color: { argb: "FF16A34A" },
       bold: true
     };
   }
+    row.height = Math.max(
+      ...row.values.map(v => (v ? v.toString().length : 10))
+    ) > 30 ? 25 : 18;
 
-});
+  });
 
-  // 📦 BORDES TIPO TABLA
-  sheet.eachRow(row => {
+  // 🔲 BORDES
+  sheet.eachRow((row, i) => {
+    if(i < 3) return;
+
     row.eachCell(cell => {
       cell.border = {
         top: { style: "thin" },
@@ -2518,14 +3212,279 @@ filas.forEach(f => {
     });
   });
 
+  // 🔍 FILTROS
+  sheet.autoFilter = {
+    from: "A3",
+    to: "H3"
+  };
+
+// 📏 AUTO AJUSTAR COLUMNAS
+sheet.columns = [
+  { key: "actividad", width: 35 },
+  { key: "persona", width: 35 },
+  { key: "puesto", width: 18 },
+  { key: "inicio", width: 20 },
+  { key: "fin", width: 20 },
+  { key: "horas", width: 12 },
+  { key: "estado", width: 15 },
+  { key: "fechaRegistro", width: 20 }
+];
+
+sheet.eachRow((row) => {
+  row.eachCell((cell) => {
+    cell.alignment = {
+      horizontal: "center",
+      vertical: "middle",
+      wrapText: true
+    };
+  });
+});
   // 📥 DESCARGAR
   const buffer = await workbook.xlsx.writeBuffer();
-  saveAs(new Blob([buffer]), "Reporte_Pro.xlsx");
+  saveAs(new Blob([buffer]), "Reporte_de_Actividades.xlsx");
+}
+function irAdmin(){
+  mostrar("loginAdmin");
 }
 
-// ================= INIT =================
+function irUsuario(){
+  mostrar("loginUsuario");
+}
+function loginAdmin(){
+
+  const email = document.getElementById("correo").value;
+  const pass = document.getElementById("password").value;
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .then((userCredential)=>{
+
+      rolUsuario = "admin";
+
+      const user = userCredential.user;
+      const uid = user.uid;
+
+      db.collection("usuarios").doc(uid).get()
+        .then(doc => {
+
+          if(doc.exists){
+            const data = doc.data();
+            const nombre = data.nombre || "Administrador";
+
+            document.getElementById("bienvenidaAdmin").innerText =
+              "Ing. " + nombre;
+          } else {
+            document.getElementById("bienvenidaAdmin").innerText =
+              "👋 Bienvenido, Administrador";
+          }
+
+        });
+
+      escucharRegistros();
+      mostrar("registros");
+      aplicarPermisos();
+
+    })
+    .catch(e => alert(e.message));
+}
 
 
+function loginUsuario(){
+
+  const email = document.getElementById("correoUsuario").value;
+  const pass = document.getElementById("passwordUsuario").value;
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(()=>{
+
+      rolUsuario = "usuario";
+
+      aplicarPermisos();
+      escucharRegistros(); // 👈 este controla TODO
+
+    })
+    .catch(e => alert(e.message));
+}
+function aplicarPermisos(){
+
+  const controles = document.getElementById("controlesAdmin");
+
+  if(!controles) return;
+
+  if(rolUsuario === "usuario"){
+    controles.style.display = "none";
+  } else {
+    controles.style.display = "flex"; // 👈 importante
+  }
+}
+function actualizarBotonAccion(){
+
+  const btn = document.getElementById("btnAccionPersona");
+
+  if(rolUsuario === "usuario"){
+
+    // 🔥 ocultar botón abajo (usuario no lo usa aquí)
+    btn.style.display = "none";
+
+  } else {
+
+    // 👑 ADMIN
+    btn.style.display = "block";
+    btn.innerHTML = "⬅ Volver";
+    btn.style.background = "#e5e7eb";
+    btn.style.color = "#111";
+    btn.style.padding = "10px";
+    btn.style.borderRadius = "8px";
+    btn.style.border = "none";
+    btn.style.cursor = "pointer";
+
+    btn.onclick = volverAPersonas;
+  }
+}
+function actualizarBotones(){
+
+  const btnLogout = document.getElementById("btnLogoutUsuario");
+  const btnVolver = document.getElementById("btnVolverAdmin");
+
+  if(rolUsuario === "usuario"){
+
+    // 👷 usuario
+    btnLogout.classList.remove("oculto");
+    btnVolver.classList.add("oculto");
+
+    btnLogout.onclick = logoutUsuario;
+
+  } else {
+
+    // 👑 admin
+    btnLogout.classList.add("oculto");
+    btnVolver.classList.remove("oculto");
+
+    btnVolver.onclick = volverAPersonas;
+  }
+}
+async function crearAdminsSeguro(){
+
+  const admins = [
+    {nombre:"Julio C. Don Juan",                   email:"juliodonjuan1@SAYER.com", pass:"Jk291181mayo"},
+    {nombre:"Facundo Luna",                        email:"facundoluna2@SAYER.com", pass:"uk$Wj.69T74&"},
+    {nombre:"Damian I. Licona",                    email:"damianlicona3@SAYER.com", pass:"M:Fd{3$828Bp"},
+    {nombre:"Julio Abisai Don Juan Lopez",         email:"heracles1912@SAYER.com", pass:"19122001"}
+  ];
+
+  let creados = 0;
+  let existentes = 0;
+
+  for(const admin of admins){
+
+    try{
+
+      const userCredential = await auth.createUserWithEmailAndPassword(
+        admin.email,
+        admin.pass
+      );
+
+      const uid = userCredential.user.uid;
+
+      await db.collection("usuarios").doc(uid).set({
+        email: admin.email,
+        nombre: admin.nombre,
+        rol: "admin"
+      });
+
+      creados++;
+
+    }catch(e){
+
+      if(e.code === "auth/email-already-in-use"){
+        existentes++;
+      } else {
+        console.error(e);
+      }
+
+    }
+  }
+
+  alert(`✅ Proceso terminado\n\nCreados: ${creados}\nYa existían: ${existentes}`);
+
+  auth.signOut();
+}
+function mostrarModalUsuario(email, password){
+  document.getElementById("nuevoEmail").innerText = email;
+  document.getElementById("nuevoPassword").innerText = password;
+
+  document.getElementById("modalUsuarioCreado")
+    .classList.remove("oculto");
+}
+
+function cerrarModalUsuario(){
+  document.getElementById("modalUsuarioCreado")
+    .classList.add("oculto");
+}
+function togglePasswordUsuario(){
+
+  const input = document.getElementById("passwordUsuario");
+
+  if(input.type === "password"){
+    input.type = "text";
+  } else {
+    input.type = "password";
+  }
+}
+function toggleEditar(){
+
+  registroActivo.permisos.editar = !registroActivo.permisos.editar;
+
+  db.collection("registros")
+    .doc(registroActivo.id)
+    .update({
+      permisos: registroActivo.permisos
+    });
+
+  mostrarActividades();
+}
+
+function toggleEliminar(){
+
+  registroActivo.permisos.eliminar = !registroActivo.permisos.eliminar;
+
+  db.collection("registros")
+    .doc(registroActivo.id)
+    .update({
+      permisos: registroActivo.permisos
+    });
+
+  mostrarActividades();
+}
+function toggleEditarActividad(i){
+  const act = registroActivo.personas[personaActiva].actividades[i];
+
+  act.permisos = act.permisos || {editar:true, eliminar:true};
+
+  act.permisos.editar = !act.permisos.editar;
+
+  db.collection("registros")
+    .doc(registroActivo.id)
+    .update({
+  personas: JSON.parse(JSON.stringify(registroActivo.personas))
+});
+
+  mostrarActividades();
+}
+
+function toggleEliminarActividad(i){
+  const act = registroActivo.personas[personaActiva].actividades[i];
+
+  act.permisos = act.permisos || {editar:true, eliminar:true};
+
+  act.permisos.eliminar = !act.permisos.eliminar;
+
+  db.collection("registros")
+    .doc(registroActivo.id)
+    .update({
+  personas: JSON.parse(JSON.stringify(registroActivo.personas))
+});
+  mostrarActividades();
+}
 </script>
 
 </body>
